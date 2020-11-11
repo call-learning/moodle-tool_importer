@@ -26,13 +26,16 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_importer\course;
+namespace tool_importer\importer;
 
 use context_course;
 use core_course_external;
+use core_customfield\data_controller;
+use core_customfield\field_controller;
 use restore_controller;
 use tool_importer\field_types;
 use tool_importer\importer_exception;
+use tool_importer\task\course_restore_task;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -43,15 +46,18 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class data_importer extends \tool_importer\data_importer {
+class course_data_importer extends \tool_importer\data_importer {
+
+    protected $cfprefix = "";
 
     /**
      * data_importer constructor.
      *
      * @param null $defaultvals additional default values
+     * @param string $customfieldsprefix
      * @throws \dml_exception
      */
-    public function __construct($defaultvals = null) {
+    public function __construct($defaultvals = null, $customfieldsprefix = "cf_") {
         global $DB;
         $defaultcategory = $DB->get_field_select('course_categories', "MIN(id)", "parent=0");
         $this->defaultvalues = [
@@ -67,6 +73,7 @@ class data_importer extends \tool_importer\data_importer {
         if ($defaultvals) {
             $this->defaultvalues = array_merge($this->defaultvalues, $defaultvals);
         }
+        $this->cfprefix = $customfieldsprefix;
     }
 
     /**
@@ -97,11 +104,30 @@ class data_importer extends \tool_importer\data_importer {
         }
         $existingcourse = !empty($row['idnumber']) && (
             $DB->record_exists('course', array('idnumber' => $row['idnumber'])));
+        $course = null;
         if ($existingcourse) {
-            $existingcourse = $DB->get_record('course', array('idnumber' => $row['idnumber']));
-            $this->update_course($row, $existingcourse);
+            $course = $DB->get_record('course', array('idnumber' => $row['idnumber']));
+            $this->update_course($row, $course);
         } else {
-            $this->create_course($row);
+            $course = $this->create_course($row);
+        }
+
+        // Now the customfields.
+        $handler = \core_course\customfield\course_handler::create($course->id);
+        $coursedatafields = $handler->get_instance_data($course->id);
+        $context = $handler->get_instance_context($course->id);
+        foreach ($row as $col => $value) {
+            if (strncmp($col, $this->cfprefix, strlen($this->cfprefix)) === 0) {
+                $cfname = substr($col, strlen($this->cfprefix));
+                foreach ($coursedatafields as $fid => $datafield) {
+                    if ($datafield->get_field()->get('shortname') == $cfname) {
+                        $datafield->set('value', $value);
+                        $datafield->set($datafield->datafield(), $value);
+                        $datafield->set('contextid', $context->id);
+                        $datafield->save();
+                    }
+                }
+            }
         }
 
     }
@@ -168,6 +194,7 @@ class data_importer extends \tool_importer\data_importer {
      * Create course
      *
      * @param $record
+     * @return object $course
      * @throws \moodle_exception
      */
     protected function create_course($record) {
@@ -176,6 +203,7 @@ class data_importer extends \tool_importer\data_importer {
         $this->set_default_values($record);
         $course = create_course((object) $record);
         $this->restore_from_template_course($record, $course);
+        return $course;
     }
 
     /**
@@ -183,6 +211,7 @@ class data_importer extends \tool_importer\data_importer {
      *
      * @param $record
      * @param $existingrecord
+     * @return object $course
      * @throws \moodle_exception
      */
     protected function update_course($record, $existingrecord) {
@@ -192,6 +221,7 @@ class data_importer extends \tool_importer\data_importer {
         $record = array_merge((array) $existingrecord, $record); // Add the recordid and other set records.
         $course = update_course((object) $record);
         $this->restore_from_template_course($record, $course);
+        return $course;
     }
 
     /**
@@ -221,8 +251,13 @@ class data_importer extends \tool_importer\data_importer {
             $templatecourse = $DB->get_record('course', array('idnumber' => $record['templatecourseidnumber']));
             // TODO: use an adhoc task to do that.
             if ($templatecourse) {
-                require_once($CFG->dirroot . '/course/externallib.php');
-                core_course_external::import_course($templatecourse->id, $course->id);
+                $courserestoretask = new course_restore_task();
+                $courserestoretask->set_custom_data(array(
+                    'templatecourseid' => $templatecourse->id,
+                    'courseid' => $course->id
+                ));
+                $courserestoretask->set_userid(get_admin()->id);
+                \core\task\manager::queue_adhoc_task($courserestoretask);
             }
         }
     }

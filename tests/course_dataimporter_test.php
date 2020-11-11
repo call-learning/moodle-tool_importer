@@ -51,6 +51,9 @@ class course_dataimporter_test extends advanced_testcase {
         // Create a template course.
         $course = $generator->create_course(['idnumber' => 'templatecourse']);
         $generator->create_module('page', ['name' => 'Page 1', 'course' => $course]);
+        // Create a couple of custom fields definitions.
+        $catid = $generator->create_custom_field_category([])->get('id');
+        $generator->create_custom_field(['categoryid' => $catid, 'type' => 'text', 'shortname' => 'f1']);
     }
 
     /**
@@ -66,15 +69,15 @@ class course_dataimporter_test extends advanced_testcase {
             }
         };
         $transformdef = array(
-            'CodeProduit' => array('to' => 'idnumber'),
-            'IntituleProduit' => array('to' => 'fullname', 'transformcallback' => 'ucwordns'),
-            'ResumeProduit' => array('to' => 'summary')
+            'CodeProduit' => array(array('to' => 'idnumber'), array('to' => 'shortname')),
+            'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),
+            'ResumeProduit' => array(array('to' => 'summary'))
         );
         $transformer = new \tool_importer\transformer\standard($transformdef);
 
         $importer = new importer($csvimporter,
             $transformer,
-            new tool_importer\course\data_importer());
+            new tool_importer\importer\course_data_importer());
         $importer->import();
         $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
         $brachycourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-BRACHY'));
@@ -83,6 +86,7 @@ class course_dataimporter_test extends advanced_testcase {
         $this->assertNotEmpty($brachycourse);
         $this->assertNotEmpty($coudecourse);
     }
+
     /**
      * @throws dml_exception
      */
@@ -96,16 +100,17 @@ class course_dataimporter_test extends advanced_testcase {
             }
         };
         $transformdef = array(
-            'CodeProduit' => array('to' => 'idnumber'),
-            'IntituleProduit' => array('to' => 'fullname', 'transformcallback' => 'ucwordns'),
-            'ResumeProduit' => array('to' => 'summary')
+            'CodeProduit' => array(array('to' => 'idnumber')),
+            'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),
+            'ResumeProduit' => array(array('to' => 'summary'))
         );
         $transformer = new \tool_importer\transformer\standard($transformdef);
 
         $importer = new importer($csvimporter,
             $transformer,
-            new tool_importer\course\data_importer(array('templatecourseidnumber'=> 'templatecourse')));
+            new tool_importer\importer\course_data_importer(array('templatecourseidnumber' => 'templatecourse')));
         $importer->import();
+        $this->runAdhocTasks(); // Make sure the import task has run.
         $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
         $brachycourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-BRACHY'));
         $coudecourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-COUDE'));
@@ -114,7 +119,43 @@ class course_dataimporter_test extends advanced_testcase {
         $this->assertNotEmpty($coudecourse);
         $cms = course_modinfo::instance($arthrocourse);
         $page = $cms->get_instances_of('page');
+        $page = reset($page); // Get the first page.
         $this->assertNotEmpty($page);
-        $this->assertEquals('Page 1', $page->fullname);
+        $this->assertEquals('Page 1', $page->name);
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public function test_simple_course_with_customfields() {
+        global $CFG, $DB;
+        $csvimporter = new class(
+            $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv')
+            extends \tool_importer\source\csv_data_source {
+            public function get_fields_definition() {
+                return course_dataimporter_test::CSV_DEFINITION;
+            }
+        };
+        $transformdef = array(
+            'CodeProduit' => array(array('to' => 'idnumber'), array('to'=>'cf_f1')),
+            'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),
+            'ResumeProduit' => array(array('to' => 'summary')),
+        );
+        $transformer = new \tool_importer\transformer\standard($transformdef);
+
+        $importer = new importer($csvimporter,
+            $transformer,
+            new tool_importer\importer\course_data_importer());
+        $importer->import();
+
+        $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
+        $brachycourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-BRACHY'));
+        $coudecourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-COUDE'));
+        $this->assertNotEmpty($arthrocourse);
+        $this->assertNotEmpty($brachycourse);
+        $this->assertNotEmpty($coudecourse);
+
+        $data = \core_course\customfield\course_handler::create()->export_instance_data_object($arthrocourse->id);
+        $this->assertEquals('AC-CHIR-ARTHRO', $data->f1);
     }
 }

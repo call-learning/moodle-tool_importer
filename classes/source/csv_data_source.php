@@ -81,9 +81,9 @@ abstract class csv_data_source extends data_source {
         if (!$columns) {
             throw new importer_exception('nocolumnsdefined', 'tool_importer', null, $csvfilepath);
         }
-        foreach ($columns as $col) {
-            if (!in_array($col, array_keys($this->get_fields_definition()))) {
-                throw new importer_exception('columnunknown', 'tool_importer', null, $col);
+        foreach ($this->get_fields_definition() as $col => $type) {
+            if (!in_array($col, $columns)) {
+                throw new importer_exception('columnmissing', 'tool_importer', null, $col);
             }
         }
     }
@@ -124,7 +124,9 @@ abstract class csv_data_source extends data_source {
      */
     protected function get_associated_array($cval) {
         $columns = $this->csvimporter->get_columns();
-        return array_combine($columns, $cval);
+        $value = array_combine($columns, $cval);
+        $required = $this->get_fields_definition();
+        return array_intersect_key($value, $required);
     }
 
     /**

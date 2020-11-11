@@ -50,14 +50,17 @@ abstract class data_transformer {
      *
      * The associative array has at least a series of column names
      * 'originfieldname' => [
-     *      'to' => 'destfieldname1,destfilename2',
-     *      'transformcallback' => 'nameoffunctiontotranformfield'
-     *                          Transform function (before concatenation)
-     *      'concatenate' => ['order'=>0]  // If a given field is assigned several times, do we concatenate
-     *  and in which order.
+     *      [
+     *          'to' => 'destfieldname1,destfilename2',
+     *          'transformcallback' => 'nameoffunctiontotranformfield'
+     *                                   Transform function (before concatenation)
+     *          'concatenate' => ['order'=>0]  // If a given field is assigned several times, do we concatenate
+     *                                         // and in which order.
+     *      ],
+     *      ...
      * ]
      * - to: A field or a list of fields. This will also change the way we interpret the transformcallback
-     * - transformcallback: Transform function (before concatenation)
+     * - transformcallback: Transform function (before concatenation), with two parameters ($value, $column)
      * - concatenate: If a given field is assigned several times, do we concatenate and in which order.
      * @return array
      */

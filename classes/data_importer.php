@@ -59,8 +59,8 @@ abstract class data_importer {
      */
     public function check_row($row) {
         $allfields = $this->get_fields_definition();
-        foreach ($row as $fiedname => $fieldvalue) {
-            if (!isset($allfields[$fiedname])) {
+        foreach ($allfields as $fiedname => $fieldvalue) {
+            if (!isset($row[$fiedname]) && !empty($fieldvalue['required'])) {
                 return false;
             }
         }

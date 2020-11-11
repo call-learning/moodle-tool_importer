@@ -15,38 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Data source class.
+ * Adhoc task to import a cours
  *
- *
- * Read data row by row
+ * As this can be a long process, this is better to use an adhoc task
  *
  * @package     tool_importer
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace tool_importer;
-defined('MOODLE_INTERNAL') || die();
-use Iterator;
 
+namespace tool_importer\task;
 /**
- * Class data_source
+ * Class course_restore_task
  *
- * This class is an interator and can be used as such.
- *
- * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package tool_importer\task
  */
-abstract class data_source implements Iterator {
-    /**
-     * Get the field definition array.
-     *
-     * This lists the necessary fields. Other fields will be ignored.
-     * The associative array has at least a series of column names
-     * Types are derived from the field_types class
-     * 'fieldname' => [ 'type' => TYPE_XXX, ...]
-     *
-     * @return array
-     */
-    public abstract function get_fields_definition();
+class course_restore_task extends \core\task\adhoc_task {
+    public function execute() {
+        global $CFG;
+        $coursedata = $this->get_custom_data();
+        require_once($CFG->dirroot . '/course/externallib.php');
+        \core_course_external::import_course($coursedata->templatecourseid, $coursedata->courseid);
+
+    }
 }

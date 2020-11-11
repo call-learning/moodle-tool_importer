@@ -24,12 +24,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function test_transform_callback($value) {
+function test_transform_callback($value, $columnname) {
     return strval($value) . 'VAL';
 }
 
-function test_transform_callback_twoval($value) {
-    return array($value, FORMAT_HTML);
+function test_transform_callback_summaryformat($value, $columnname) {
+    return FORMAT_HTML;
 }
 
 /**
@@ -48,8 +48,8 @@ class standard_transformer_test extends advanced_testcase {
 
     public function test_simple_column_transform() {
         $transformdef = array(
-            'col1' => array('to' => 'newcol1'),
-            'col2' => array('to' => 'newcol2,newcol3')
+            'col1' => array(array('to' => 'newcol1')),
+            'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
         );
         $transformer = new \tool_importer\transformer\standard($transformdef);
 
@@ -59,14 +59,14 @@ class standard_transformer_test extends advanced_testcase {
                 'newcol2' => 1234,
                 'newcol3' => 1234,
                 'col3' => 'AAAAA',
-            ), $transformer->transform((object) self::ROW_DEF)
+            ), $transformer->transform(self::ROW_DEF)
         );
     }
 
     public function test_simple_column_transform_with_callback() {
         $transformdef = array(
-            'col1' => array('to' => 'newcol1', 'transformcallback' => 'test_transform_callback'),
-            'col2' => array('to' => 'newcol2,newcol3')
+            'col1' => array(array('to' => 'newcol1', 'transformcallback' => 'test_transform_callback')),
+            'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
         );
         $transformer = new \tool_importer\transformer\standard($transformdef);
 
@@ -76,14 +76,15 @@ class standard_transformer_test extends advanced_testcase {
                 'newcol2' => 1234,
                 'newcol3' => 1234,
                 'col3' => 'AAAAA',
-            ), $transformer->transform((object) self::ROW_DEF)
+            ), $transformer->transform(self::ROW_DEF)
         );
     }
 
     public function test_simple_column_transform_with_enhanced_callback() {
         $transformdef = array(
-            'col1' => array('to' => 'summary,format', 'transformcallback' => 'test_transform_callback_twoval'),
-            'col2' => array('to' => 'newcol2,newcol3')
+            'col1' => array(array('to' => 'summary'),
+                array('to' => 'format', 'transformcallback' => 'test_transform_callback_summaryformat')),
+            'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
         );
         $transformer = new \tool_importer\transformer\standard($transformdef);
 
@@ -94,14 +95,14 @@ class standard_transformer_test extends advanced_testcase {
                 'col3' => 'AAAAA',
                 'summary' => 'col1value',
                 'format' => '1'
-            ), $transformer->transform((object) self::ROW_DEF)
+            ), $transformer->transform(self::ROW_DEF)
         );
     }
 
     public function test_simple_column_concat() {
         $transformdef = array(
-            'col1' => array('to' => 'newcol1', 'concatenate' => ['order' => 0]),
-            'col3' => array('to' => 'newcol1', 'concatenate' => ['order' => 1])
+            'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0])),
+            'col3' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1]))
         );
         $transformer = new \tool_importer\transformer\standard($transformdef);
 
@@ -109,11 +110,11 @@ class standard_transformer_test extends advanced_testcase {
             array(
                 'newcol1' => "col1value AAAAA",
                 'col2' => 1234,
-            ), $transformer->transform((object) self::ROW_DEF)
+            ), $transformer->transform(self::ROW_DEF)
         );
         $transformdef = array(
-            'col1' => array('to' => 'newcol1', 'concatenate' => ['order' => 0]),
-            'col2' => array('to' => 'newcol1', 'concatenate' => ['order' => 1])
+            'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0])),
+            'col2' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1]))
         );
         $transformer = new \tool_importer\transformer\standard($transformdef);
 
@@ -121,11 +122,11 @@ class standard_transformer_test extends advanced_testcase {
             array(
                 'newcol1' => "col1value 1234",
                 'col3' => "AAAAA",
-            ), $transformer->transform((object) self::ROW_DEF)
+            ), $transformer->transform(self::ROW_DEF)
         );
         $transformdef = array(
-            'col1' => array('to' => 'newcol1', 'concatenate' => ['order' => 1]),
-            'col2' => array('to' => 'newcol1', 'concatenate' => ['order' => 0])
+            'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1])),
+            'col2' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0]))
         );
         $transformer = new \tool_importer\transformer\standard($transformdef);
 
@@ -133,7 +134,7 @@ class standard_transformer_test extends advanced_testcase {
             array(
                 'newcol1' => "1234 col1value",
                 'col3' => "AAAAA",
-            ), $transformer->transform((object) self::ROW_DEF)
+            ), $transformer->transform(self::ROW_DEF)
         );
     }
 }

@@ -26,6 +26,7 @@
  */
 
 namespace tool_importer\transformer;
+
 use core_customfield\data;
 use stdClass;
 use tool_importer\data_transformer;
@@ -55,47 +56,38 @@ class standard extends data_transformer {
             $value = $fieldvalue;
             if (!empty($this->fieldtransformerdef[$fieldname])) {
                 // There is a transformation available.
-                $transformdef = $this->fieldtransformerdef[$fieldname];
-                if (!empty($transformdef['to'])) {
-                    $targetfieldname = $transformdef['to'];
-                    // Deal with several output fields.
-                    if (strstr($targetfieldname, ',')) {
-                        $targetfieldname = explode(',', $targetfieldname);
+                $transformdefs = $this->fieldtransformerdef[$fieldname];
+                foreach ($transformdefs as $tdef) {
+                    if (!empty($tdef['to'])) {
+                        $targetfieldname = $tdef['to'];
                     }
-                }
-                if (!empty($transformdef['concatenate'])) {
-                    $order = empty($transformdef['concatenate']['order']) ? 0 : $transformdef['concatenate']['order'];
-                }
-                if (!empty($transformdef['transformcallback'])) {
-                    $callback = $transformdef['transformcallback'];
-                    if (function_exists($callback)) {
-                        $value = call_user_func($callback, $value); // This can be an array if needed.
+                    if (!empty($tdef['concatenate'])) {
+                        $order = empty($tdef['concatenate']['order']) ? 0 : $tdef['concatenate']['order'];
                     }
-                }
-            } else {
-                $resultrow[$fieldname][0] = $value;
-            }
-            if (is_array($targetfieldname)) {
-                foreach ($targetfieldname as $index => $tname) {
-                    $realvalue = $value; // Normally we should have the same amount of info
-                    // in the value and the number of fields.
-                    if (is_array($value) && isset($value[$index])) {
-                        $realvalue = $value[$index];
+                    if (!empty($tdef['transformcallback'])) {
+                        $callback = $tdef['transformcallback'];
+                        if (function_exists($callback)) {
+                            $value = call_user_func($callback, $value, $fieldname); // This can be an array if needed.
+                        }
                     }
-                    $resultrow[$tname][$order] = $realvalue;
+                    if (empty($resultrow[$targetfieldname])) {
+                        $resultrow[$targetfieldname] = [];
+                    }
+                    $resultrow[$targetfieldname][$order] = $value;
                 }
             } else {
                 $resultrow[$targetfieldname][$order] = $value;
             }
+
         }
         // Now flatten the result.
         $flatresult = [];
-        foreach ($resultrow as $fieldname => $fieldvalue) {
-            if (count($fieldvalue) > 1) {
-                ksort($fieldvalue);
-                $flatresult[$fieldname] = implode($this->get_concat_separator(), $fieldvalue);
+        foreach ($resultrow as $fieldname => $fieldvalues) {
+            if (count($fieldvalues) > 1) {
+                ksort($fieldvalues);
+                $flatresult[$fieldname] = implode($this->get_concat_separator(), $fieldvalues);
             } else {
-                $flatresult[$fieldname] = $fieldvalue[0];
+                $flatresult[$fieldname] = reset($fieldvalues);
             }
         }
         return $flatresult;
