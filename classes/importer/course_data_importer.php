@@ -35,6 +35,7 @@ use core_customfield\field_controller;
 use restore_controller;
 use tool_importer\field_types;
 use tool_importer\importer_exception;
+use tool_importer\locallib\utils;
 use tool_importer\task\course_restore_task;
 
 defined('MOODLE_INTERNAL') || die();
@@ -120,7 +121,21 @@ class course_data_importer extends \tool_importer\data_importer {
             if (strncmp($col, $this->cfprefix, strlen($this->cfprefix)) === 0) {
                 $cfname = substr($col, strlen($this->cfprefix));
                 foreach ($coursedatafields as $fid => $datafield) {
-                    if ($datafield->get_field()->get('shortname') == $cfname) {
+                    $field = $datafield->get_field();
+                    if ($field->get('shortname') == $cfname) {
+                        // If select or multiselect, then the value is an integer.
+                        // Here we try to match without case to avoid issue with bad input data.
+                        if (method_exists($field, 'get_options_array')) {
+                            $optionarray = $field::get_options_array($field);
+                            $indexvalue = 0;
+                            foreach ($optionarray as $index => $optionvalue) {
+                                if (utils::compare_ws_accents($value, $optionvalue) === 0) {
+                                    $indexvalue = $index;
+                                    break;
+                                }
+                            }
+                            $value = $indexvalue;
+                        }
                         $datafield->set('value', $value);
                         $datafield->set($datafield->datafield(), $value);
                         $datafield->set('contextid', $context->id);
