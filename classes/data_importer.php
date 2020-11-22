@@ -49,7 +49,28 @@ abstract class data_importer {
      * @param $row
      * @return mixed
      */
-    public abstract function import_row($row);
+    public function import_row($row) {
+        $data = $this->raw_import($row);
+        $this->after_row_imported($row, $data);
+    }
+
+    /**
+     * Callback after each row is imported.
+     *
+     * @param $row
+     * @return mixed
+     */
+    public function after_row_imported($row, $data) {
+        // Nothing for now but can be overridden.
+    }
+
+    /**
+     * Do the real import (in the persistent state/database)
+     *
+     * @param $row
+     * @return mixed
+     */
+    protected abstract function raw_import($row);
 
     /**
      * Check if row is valid.
@@ -76,5 +97,4 @@ abstract class data_importer {
     public function set_default_value($key, $value) {
         $this->defaultvalues[$key] = $value;
     }
-
 }

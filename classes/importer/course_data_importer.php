@@ -84,7 +84,7 @@ class course_data_importer extends \tool_importer\data_importer {
      * @return mixed|void
      * @throws importer_exception
      */
-    public function import_row($row) {
+    protected function raw_import($row) {
         global $DB;
         foreach ($this->get_fields_definition() as $col => $value) {
             if (empty($value['type'])) {
@@ -115,7 +115,7 @@ class course_data_importer extends \tool_importer\data_importer {
 
         // Now the customfields.
         $handler = \core_course\customfield\course_handler::create($course->id);
-        $coursedatafields = $handler->get_instance_data($course->id);
+        $coursedatafields = $handler->get_instance_data($course->id, true);
         $context = $handler->get_instance_context($course->id);
         foreach ($row as $col => $value) {
             if (strncmp($col, $this->cfprefix, strlen($this->cfprefix)) === 0) {
@@ -140,11 +140,12 @@ class course_data_importer extends \tool_importer\data_importer {
                         $datafield->set($datafield->datafield(), $value);
                         $datafield->set('contextid', $context->id);
                         $datafield->save();
+                        $course->{'cf_'.$field->get('shortname')} = $value; // We augment the course object with customfields.
                     }
                 }
             }
         }
-
+        return $course;
     }
 
     /**

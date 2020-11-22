@@ -117,7 +117,7 @@ class inmemory_importer extends data_importer {
         ];
     }
 
-    public function import_row($row) {
+    public function raw_import($row) {
         $this->resultarray[] = $row;
     }
 }
