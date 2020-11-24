@@ -24,6 +24,9 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace tool_importer;
+use progress_bar;
+use text_progress_trace;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -36,9 +39,22 @@ defined('MOODLE_INTERNAL') || die();
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class importer {
+    /**
+     * @var data_source
+     */
     protected $source;
+    /**
+     * @var data_transformer
+     */
     protected $transformer;
+    /**
+     * @var data_importer
+     */
     protected $importer;
+    /**
+     * @var mixed|null $progressbar
+     */
+    protected $progressbar;
 
     /**
      * Omporter constructor.
@@ -47,19 +63,32 @@ class importer {
      * @param data_transformer $transformer
      * @param data_importer $importer
      */
-    public function __construct(data_source $source, data_transformer $transformer, data_importer $importer) {
+    public function __construct(data_source $source, data_transformer $transformer, data_importer $importer, $progressbar = null) {
         $this->source = $source;
         $this->source->rewind();
         $this->transformer = $transformer;
         $this->importer = $importer;
+        $this->progressbar = $progressbar;
     }
 
     /**
      * Import the whole set of entities
      */
     public function import() {
-        foreach ($this->source as $row) {
+        $rowcount = $this->source->get_total_row_count();
+        foreach ($this->source as $rowindex => $row) {
             $transformedrow = $this->transformer->transform($row);
+            if ($this->progressbar) {
+                if ($this->progressbar instanceof progress_bar) {
+                    $this->progressbar->update(
+                        $rowindex,
+                        $rowcount,
+                        get_string('process:progress', 'tool_importer'));
+                }
+                if ($this->progressbar instanceof text_progress_trace) {
+                    $this->progressbar->output("$rowindex/$rowcount");
+                }
+            }
             if ($this->importer->check_row($transformedrow)) {
                 $this->importer->import_row($transformedrow);
             }

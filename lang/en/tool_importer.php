@@ -26,3 +26,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Data Importer';
+$string['process:progress'] = 'Processing import';

@@ -49,4 +49,10 @@ abstract class data_source implements Iterator {
      * @return array
      */
     public abstract function get_fields_definition();
+
+    /**
+     * Get the total number of records
+     * @return mixed
+     */
+    public abstract function get_total_row_count();
 }
