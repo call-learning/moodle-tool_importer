@@ -72,7 +72,8 @@ abstract class data_transformer {
      * Return the transformed row depending on the field transformer values.
      *
      * @param array $row an associative array (column => value)
+     * @param string $concatseparator
      * @return mixed
      */
-    public abstract function transform($row);
+    public abstract function transform($row, $concatseparator = ' ');
 }

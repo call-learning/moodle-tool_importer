@@ -47,7 +47,7 @@ class standard extends data_transformer {
      * @param array $row an associative array (column => value)
      * @return mixed
      */
-    public function transform($row) {
+    public function transform($row, $concatseparator = ' ') {
         $resultrow = [];
         foreach ($row as $fieldname => $fieldvalue) {
             $targetfieldname = $fieldname;
@@ -85,20 +85,11 @@ class standard extends data_transformer {
         foreach ($resultrow as $fieldname => $fieldvalues) {
             if (count($fieldvalues) > 1) {
                 ksort($fieldvalues);
-                $flatresult[$fieldname] = implode($this->get_concat_separator(), $fieldvalues);
+                $flatresult[$fieldname] = implode($concatseparator, $fieldvalues);
             } else {
                 $flatresult[$fieldname] = reset($fieldvalues);
             }
         }
         return $flatresult;
-    }
-
-    /**
-     * Separator between concatenated elements
-     *
-     * @return string
-     */
-    protected function get_concat_separator() {
-        return ' ';
     }
 }

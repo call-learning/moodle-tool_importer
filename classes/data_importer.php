@@ -97,4 +97,29 @@ abstract class data_importer {
     public function set_default_value($key, $value) {
         $this->defaultvalues[$key] = $value;
     }
+
+    /**
+     * Make sure the fields validate correctly
+     *
+     * @throws importer_exception
+     */
+    public function basic_validations($row) {
+        foreach ($this->get_fields_definition() as $col => $value) {
+            if (empty($value['type'])) {
+                throw new importer_exception('importercolumndef', 'tool_importer', null, 'type');
+            }
+            $type = $value['type'];
+            $required = empty($value['required']) ? false : $value['required'];
+            if ($required && !isset($row[$col])) {
+                throw new importer_exception('rowvaluerequired', 'tool_importer', null,
+                    "{$col}:" . json_encode($row));
+            } else if (!isset($row[$col])) {
+                continue;
+            }
+            if (!field_types::is_valid($row[$col], $type)) {
+                throw new importer_exception('invalidrowvalue', 'tool_importer', null,
+                    "{$col}:" . json_encode($row));
+            }
+        }
+    }
 }
