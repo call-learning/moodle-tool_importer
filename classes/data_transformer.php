@@ -39,10 +39,25 @@ defined('MOODLE_INTERNAL') || die();
  * @package tool_importer
  */
 abstract class data_transformer {
+    /**
+     * @var array transformation definition
+     */
     protected $fieldtransformerdef = array();
 
-    public function __construct($transformerdef = array()) {
+    /**
+     * @var string separator for concatenation
+     */
+    protected $concatseparator =  ' ';
+
+    /**
+     * data_transformer constructor.
+     *
+     * @param array $transformerdef definition
+     * @param string $concatseparator separator for concatenation
+     */
+    public function __construct($transformerdef = array(),  $concatseparator = ' ') {
         $this->fieldtransformerdef = $transformerdef;
+        $this->concatseparator = $concatseparator;
     }
 
     /**
@@ -72,8 +87,7 @@ abstract class data_transformer {
      * Return the transformed row depending on the field transformer values.
      *
      * @param array $row an associative array (column => value)
-     * @param string $concatseparator
      * @return mixed
      */
-    public abstract function transform($row, $concatseparator = ' ');
+    public abstract function transform($row);
 }
