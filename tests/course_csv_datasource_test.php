@@ -29,9 +29,11 @@ defined('MOODLE_INTERNAL') || die();
  *
  * An in memory datasource for tests
  *
- * @package tool_importer\course
+ * @package     tool_importer
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_sample1_csv extends \tool_importer\source\csv_data_source {
+class course_sample1_csv extends \tool_importer\local\source\csv_data_source {
 
     /**
      * Get field definition
@@ -56,6 +58,9 @@ class course_sample1_csv extends \tool_importer\source\csv_data_source {
  */
 class course_csv_datasource_test extends advanced_testcase {
 
+    /**
+     * Test data
+     */
     const LOREM_IPSUM = '<p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit'
     . ' anim id est laborum <br/> Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu '
     . 'fugiat nulla pariatur.<br />  Etre capable de se rep&eacute;rer dans un espace clos avec un arthroscope'
@@ -70,6 +75,9 @@ class course_csv_datasource_test extends advanced_testcase {
     . 'incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation '
     . 'ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>';
 
+    /**
+     * Setup
+     */
     public function setUp() {
         parent::setUp();
         $this->resetAfterTest();
@@ -78,6 +86,9 @@ class course_csv_datasource_test extends advanced_testcase {
         $generator->create_course(['idnumber' => 'templatecourse']);
     }
 
+    /**
+     * Test
+     */
     public function test_simple_course_csv_import() {
         global $CFG;
         $importer = new course_sample1_csv(
@@ -123,6 +134,9 @@ class course_csv_datasource_test extends advanced_testcase {
         );
     }
 
+    /**
+     * Test
+     */
     public function test_empty_course_csv_import() {
         global $CFG;
         $importer = new course_sample1_csv(
@@ -138,6 +152,9 @@ class course_csv_datasource_test extends advanced_testcase {
         );
     }
 
+    /**
+     * Test
+     */
     public function test_iterator_course_csv_import() {
         global $CFG;
         $importer = new course_sample1_csv(

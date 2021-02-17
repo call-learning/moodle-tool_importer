@@ -34,7 +34,9 @@ defined('MOODLE_INTERNAL') || die();
  *
  * An in memory datasource for tests
  *
- * @package tool_importer\course
+ * @package     tool_importer
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class inmemory_data_source extends data_source {
 
@@ -79,6 +81,10 @@ class inmemory_data_source extends data_source {
             'col4' => \tool_importer\field_types::TYPE_TEXT,
         ];
     }
+
+    public function get_total_row_count() {
+        return 3;
+    }
 }
 
 /**
@@ -86,10 +92,17 @@ class inmemory_data_source extends data_source {
  *
  * A minimal data transformer for test
  *
- * @package tool_importer\course
+ * @package     tool_importer
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class minimal_transformer extends data_transformer {
 
+    /**
+     * Transform function
+     * @param array $row
+     * @return array|mixed
+     */
     public function transform($row) {
         $outrow = $row;
         $outrow['newcol1'] = $row['col1'];
@@ -103,11 +116,16 @@ class minimal_transformer extends data_transformer {
  *
  * A minimal data transformer for test
  *
- * @package tool_importer\course
+ * @package     tool_importer
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class inmemory_importer extends data_importer {
     public $resultarray = [];
 
+    /**
+     * Get field definitions
+     */
     public function get_fields_definition() {
         return [
             'newcol1' => \tool_importer\field_types::TYPE_TEXT,
@@ -117,6 +135,11 @@ class inmemory_importer extends data_importer {
         ];
     }
 
+    /**
+     * Raw import
+     * @param $row
+     * @return mixed|void
+     */
     public function raw_import($row) {
         $this->resultarray[] = $row;
     }

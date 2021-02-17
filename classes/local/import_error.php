@@ -22,34 +22,30 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_importer\locallib;
-
-use core_text;
-
-class utils {
+class import_error {
     /**
-     * Remove accentuated character from a given string
+     * @var int
+     */
+    public $linenumber;
+    /**
+     * @var string
+     */
+    public $errorcode;
+    /**
+     * @var string
+     */
+    public $fieldname;
+
+    /**
+     * import_error constructor.
      *
-     * @param string $input
-     * @return string
-     * @throws \moodle_exception
+     * @param $linenumber
+     * @param $fieldname
+     * @param $errorcode
      */
-    public static function translate_ascii($input) {
-        return core_text::convert($input, 'utf-8', 'ascii');
-    }
-
-    /**
-     * Compare two strings without space, on a lower case basis and without accentuated chars
-     */
-    /**
-     * @param string $s1 first string
-     * @param string $s2 second string
-     * @return int|\lt  <0 if $s1 < $s2, >0 if $s1 > $s2 and 0 if $s1 = $s2
-     */
-    public static function compare_ws_accents($s1, $s2) {
-        $s1 = str_replace(' ', '', static::translate_ascii($s1));
-        $s2 = str_replace(' ', '', static::translate_ascii($s2));
-        return strcasecmp($s1, $s2);
+    public function __construct($linenumber, $fieldname, $errorcode) {
+        $this->linenumber = $linenumber;
+        $this->errorcode = $errorcode;
+        $this->fieldname = $fieldname;
     }
 }
-

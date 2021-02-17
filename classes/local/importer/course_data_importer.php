@@ -26,16 +26,12 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_importer\importer;
+namespace tool_importer\local\importer;
 
-use context_course;
-use core_course_external;
-use core_customfield\data_controller;
-use core_customfield\field_controller;
-use restore_controller;
+
+use tool_importer\data_importer;
 use tool_importer\field_types;
 use tool_importer\importer_exception;
-use tool_importer\locallib\utils;
 use tool_importer\task\course_restore_task;
 
 defined('MOODLE_INTERNAL') || die();
@@ -47,7 +43,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_data_importer extends \tool_importer\data_importer {
+class course_data_importer extends data_importer {
 
     protected $cfprefix = "";
 

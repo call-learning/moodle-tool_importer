@@ -22,6 +22,8 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use tool_importer\local\transformer\standard;
+
 defined('MOODLE_INTERNAL') || die();
 
 function test_transform_callback($value, $columnname) {
@@ -40,18 +42,24 @@ function test_transform_callback_summaryformat($value, $columnname) {
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class standard_transformer_test extends advanced_testcase {
+    /**
+     * Test row definition
+     */
     const ROW_DEF = array(
         'col1' => 'col1value',
         'col2' => 1234,
         'col3' => "AAAAA",
     );
 
+    /**
+     * Test
+     */
     public function test_simple_column_transform() {
         $transformdef = array(
             'col1' => array(array('to' => 'newcol1')),
             'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
         );
-        $transformer = new \tool_importer\transformer\standard($transformdef);
+        $transformer = new standard($transformdef);
 
         $this->assertEquals(
             array(
@@ -63,12 +71,15 @@ class standard_transformer_test extends advanced_testcase {
         );
     }
 
+    /**
+     * Test
+     */
     public function test_simple_column_transform_with_callback() {
         $transformdef = array(
             'col1' => array(array('to' => 'newcol1', 'transformcallback' => 'test_transform_callback')),
             'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
         );
-        $transformer = new \tool_importer\transformer\standard($transformdef);
+        $transformer = new standard($transformdef);
 
         $this->assertEquals(
             array(
@@ -80,13 +91,16 @@ class standard_transformer_test extends advanced_testcase {
         );
     }
 
+    /**
+     * Test
+     */
     public function test_simple_column_transform_with_enhanced_callback() {
         $transformdef = array(
             'col1' => array(array('to' => 'summary'),
                 array('to' => 'format', 'transformcallback' => 'test_transform_callback_summaryformat')),
             'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
         );
-        $transformer = new \tool_importer\transformer\standard($transformdef);
+        $transformer = new standard($transformdef);
 
         $this->assertEquals(
             array(
@@ -99,12 +113,15 @@ class standard_transformer_test extends advanced_testcase {
         );
     }
 
+    /**
+     * Test
+     */
     public function test_simple_column_concat() {
         $transformdef = array(
             'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0])),
             'col3' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1]))
         );
-        $transformer = new \tool_importer\transformer\standard($transformdef);
+        $transformer = new standard($transformdef);
 
         $this->assertEquals(
             array(
@@ -116,7 +133,7 @@ class standard_transformer_test extends advanced_testcase {
             'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0])),
             'col2' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1]))
         );
-        $transformer = new \tool_importer\transformer\standard($transformdef);
+        $transformer = new standard($transformdef);
 
         $this->assertEquals(
             array(
@@ -128,7 +145,7 @@ class standard_transformer_test extends advanced_testcase {
             'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1])),
             'col2' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0]))
         );
-        $transformer = new \tool_importer\transformer\standard($transformdef);
+        $transformer = new standard($transformdef);
 
         $this->assertEquals(
             array(

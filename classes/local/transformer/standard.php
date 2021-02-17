@@ -25,7 +25,7 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_importer\transformer;
+namespace tool_importer\local\transformer;
 
 use core_customfield\data;
 use stdClass;

@@ -47,7 +47,7 @@ abstract class data_transformer {
     /**
      * @var string separator for concatenation
      */
-    protected $concatseparator =  ' ';
+    protected $concatseparator = ' ';
 
     /**
      * data_transformer constructor.
@@ -55,7 +55,7 @@ abstract class data_transformer {
      * @param array $transformerdef definition
      * @param string $concatseparator separator for concatenation
      */
-    public function __construct($transformerdef = array(),  $concatseparator = ' ') {
+    public function __construct($transformerdef = array(), $concatseparator = ' ') {
         $this->fieldtransformerdef = $transformerdef;
         $this->concatseparator = $concatseparator;
     }

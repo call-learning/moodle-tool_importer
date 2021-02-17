@@ -26,7 +26,7 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_importer\source;
+namespace tool_importer\local\source;
 
 use csv_import_reader;
 use tool_importer\data_source;

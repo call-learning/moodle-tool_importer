@@ -75,17 +75,20 @@ abstract class data_importer {
     /**
      * Check if row is valid.
      *
+     *
      * @param $row
-     * @return bool
+     * @param $rowindex
+     * @return array of import_error (with field name and errorcode) or null if no error
      */
-    public function check_row($row) {
+    public function validate($row, $rowindex) {
         $allfields = $this->get_fields_definition();
-        foreach ($allfields as $fiedname => $fieldvalue) {
-            if (!isset($row[$fiedname]) && !empty($fieldvalue['required'])) {
-                return false;
+        $errors = [];
+        foreach ($allfields as $fieldname => $fieldvalue) {
+            if (!isset($row[$fieldname]) && !empty($fieldvalue['required'])) {
+                $errors[] = new \import_error($rowindex, $fieldname, 'required');
             }
         }
-        return true;
+        return $errors;
     }
 
     /**

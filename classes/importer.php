@@ -23,7 +23,9 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_importer;
+
 use progress_bar;
 use text_progress_trace;
 
@@ -57,6 +59,11 @@ class importer {
     protected $progressbar;
 
     /**
+     * @var array
+     */
+    protected $errors = [];
+
+    /**
      * Omporter constructor.
      *
      * @param data_source $source
@@ -75,6 +82,7 @@ class importer {
      * Import the whole set of entities
      */
     public function import() {
+        $this->errors = [];
         $rowcount = $this->source->get_total_row_count();
         foreach ($this->source as $rowindex => $row) {
             $transformedrow = $this->transformer->transform($row);
@@ -89,10 +97,23 @@ class importer {
                     $this->progressbar->output("$rowindex/$rowcount");
                 }
             }
-            if ($this->importer->check_row($transformedrow)) {
+            $errors = $this->importer->validate($transformedrow, $rowindex);
+            if (empty($errors)) {
                 $this->importer->import_row($transformedrow);
+            } else {
+                $this->errors = array_merge($this->errors, $errors);
             }
         }
+        return empty($this->errors);
+    }
+
+    /**
+     * Get errors
+     *
+     * @return array of error with line, field and error code info.
+     */
+    public function get_errors() {
+        return $this->errors;
     }
 
 }
