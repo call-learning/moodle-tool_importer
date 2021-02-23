@@ -27,6 +27,8 @@
  */
 
 namespace tool_importer;
+use tool_importer\local\import_error;
+
 defined('MOODLE_INTERNAL') || die();
 
 abstract class data_importer {
@@ -85,7 +87,7 @@ abstract class data_importer {
         $errors = [];
         foreach ($allfields as $fieldname => $fieldvalue) {
             if (!isset($row[$fieldname]) && !empty($fieldvalue['required'])) {
-                $errors[] = new \import_error($rowindex, $fieldname, 'required');
+                $errors[] = new import_error($rowindex, $fieldname, 'required');
             }
         }
         return $errors;

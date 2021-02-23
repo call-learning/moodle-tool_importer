@@ -28,6 +28,7 @@ namespace tool_importer;
 
 use progress_bar;
 use text_progress_trace;
+use tool_importer\local\import_error;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -85,23 +86,28 @@ class importer {
         $this->errors = [];
         $rowcount = $this->source->get_total_row_count();
         foreach ($this->source as $rowindex => $row) {
-            $transformedrow = $this->transformer->transform($row);
-            if ($this->progressbar) {
-                if ($this->progressbar instanceof progress_bar) {
-                    $this->progressbar->update(
-                        $rowindex,
-                        $rowcount,
-                        get_string('process:progress', 'tool_importer'));
+            try {
+                $transformedrow = $this->transformer->transform($row);
+                if ($this->progressbar) {
+                    if ($this->progressbar instanceof progress_bar) {
+                        $this->progressbar->update(
+                            $rowindex,
+                            $rowcount,
+                            get_string('process:progress', 'tool_importer'));
+                    }
+                    if ($this->progressbar instanceof text_progress_trace) {
+                        $this->progressbar->output("$rowindex/$rowcount");
+                    }
                 }
-                if ($this->progressbar instanceof text_progress_trace) {
-                    $this->progressbar->output("$rowindex/$rowcount");
+                $errors = $this->importer->validate($transformedrow, $rowindex);
+                if (empty($errors)) {
+                    $this->importer->import_row($transformedrow);
+                } else {
+                    $this->errors = array_merge($this->errors, $errors);
                 }
-            }
-            $errors = $this->importer->validate($transformedrow, $rowindex);
-            if (empty($errors)) {
-                $this->importer->import_row($transformedrow);
-            } else {
-                $this->errors = array_merge($this->errors, $errors);
+            } catch(\moodle_exception $e) {
+                $this->errors[] = new import_error($rowindex,'', 'exception', $e->getMessage()
+                    . 'file:'. $e->getFile().':'.$e->getLine());
             }
         }
         return empty($this->errors);

@@ -21,6 +21,8 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace tool_importer\local;
+defined('MOODLE_INTERNAL') || die();
 
 class import_error {
     /**
@@ -35,6 +37,11 @@ class import_error {
      * @var string
      */
     public $fieldname;
+    /**
+     * @var string
+     */
+    public $errormessage;
+
 
     /**
      * import_error constructor.
@@ -42,10 +49,16 @@ class import_error {
      * @param $linenumber
      * @param $fieldname
      * @param $errorcode
+     * @param $errormessage
      */
-    public function __construct($linenumber, $fieldname, $errorcode) {
+    public function __construct($linenumber, $fieldname, $errorcode, $errormessage="") {
         $this->linenumber = $linenumber;
         $this->errorcode = $errorcode;
         $this->fieldname = $fieldname;
+        $this->errormessage = $errormessage;
+    }
+
+    public function get_full_message() {
+        return "($this->errorcode) $$this->errormessage line $this->linenumber $this->fieldname";
     }
 }

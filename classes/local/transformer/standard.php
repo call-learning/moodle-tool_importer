@@ -66,7 +66,7 @@ class standard extends data_transformer {
                     }
                     if (!empty($tdef['transformcallback'])) {
                         $callback = $tdef['transformcallback'];
-                        if (function_exists($callback)) {
+                        if (function_exists($callback) || is_callable($callback)) {
                             $value = call_user_func($callback, $value, $fieldname); // This can be an array if needed.
                         }
                     }
