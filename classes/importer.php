@@ -65,7 +65,7 @@ class importer {
     protected $errors = [];
 
     /**
-     * Omporter constructor.
+     * Importer constructor.
      *
      * @param data_source $source
      * @param data_transformer $transformer

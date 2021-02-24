@@ -52,12 +52,13 @@ class standard extends data_transformer {
         foreach ($row as $fieldname => $fieldvalue) {
             $targetfieldname = $fieldname;
             $order = 0;
-            // It might return several values that will later be concatenated.
-            $value = $fieldvalue;
+
             if (!empty($this->fieldtransformerdef[$fieldname])) {
                 // There is a transformation available.
                 $transformdefs = $this->fieldtransformerdef[$fieldname];
                 foreach ($transformdefs as $tdef) {
+                    // It might return several values that will later be concatenated.
+                    $value = $fieldvalue;
                     if (!empty($tdef['to'])) {
                         $targetfieldname = $tdef['to'];
                     }
@@ -76,7 +77,7 @@ class standard extends data_transformer {
                     $resultrow[$targetfieldname][$order] = $value;
                 }
             } else {
-                $resultrow[$targetfieldname][$order] = $value;
+                $resultrow[$targetfieldname][$order] = $fieldvalue;
             }
 
         }
