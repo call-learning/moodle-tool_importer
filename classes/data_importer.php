@@ -75,7 +75,7 @@ abstract class data_importer {
     protected abstract function raw_import($row);
 
     /**
-     * Check if row is valid.
+     * Check if row is valid after transformation.
      *
      *
      * @param $row
@@ -90,6 +90,19 @@ abstract class data_importer {
                 $errors[] = new import_error($rowindex, $fieldname, 'required');
             }
         }
+        return $errors;
+    }
+
+    /**
+     * Check if row is valid before we transform it.
+     *
+     * This helps to catch errors before we try to transform the row.
+     * @param $row
+     * @param $rowindex
+     * @return array of import_error (with field name and errorcode) or null if no error
+     */
+    public function validate_before_transform($row, $rowindex) {
+        $errors = [];
         return $errors;
     }
 

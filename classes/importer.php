@@ -87,7 +87,6 @@ class importer {
         $rowcount = $this->source->get_total_row_count();
         foreach ($this->source as $rowindex => $row) {
             try {
-                $transformedrow = $this->transformer->transform($row);
                 if ($this->progressbar) {
                     if ($this->progressbar instanceof progress_bar) {
                         $this->progressbar->update(
@@ -99,6 +98,13 @@ class importer {
                         $this->progressbar->output("$rowindex/$rowcount");
                     }
                 }
+
+                $errors = $this->importer->validate_before_transform($row, $rowindex);
+                if (!empty($errors)) {
+                    $this->errors = array_merge($this->errors, $errors);
+                    continue;
+                }
+                $transformedrow = $this->transformer->transform($row);
                 $errors = $this->importer->validate($transformedrow, $rowindex);
                 if (empty($errors)) {
                     $this->importer->import_row($transformedrow);
