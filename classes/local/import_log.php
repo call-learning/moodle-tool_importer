@@ -24,7 +24,7 @@
 namespace tool_importer\local;
 defined('MOODLE_INTERNAL') || die();
 
-class import_error {
+class import_log {
     /**
      * @var int
      */
@@ -32,7 +32,18 @@ class import_error {
     /**
      * @var string
      */
-    public $errorcode;
+    public $messagecode;
+
+    /**
+     * @var string
+     */
+    public $module;
+
+    /**
+     * @var string
+     */
+    public $additionalinfo;
+
     /**
      * @var string
      */
@@ -51,14 +62,15 @@ class import_error {
      * @param $errorcode
      * @param $errormessage
      */
-    public function __construct($linenumber, $fieldname, $errorcode, $errormessage="") {
+    public function __construct($linenumber, $fieldname, $code, $module='tool_importer',  $additionalinfo = null)  {
         $this->linenumber = $linenumber;
-        $this->errorcode = $errorcode;
+        $this->messagecode = $code;
         $this->fieldname = $fieldname;
-        $this->errormessage = $errormessage;
+        $this->module = $module;
+        $this->additionalinfo = $additionalinfo;
     }
 
     public function get_full_message() {
-        return "($this->errorcode) $$this->errormessage line $this->linenumber $this->fieldname";
+        return "($this->messagecode) $$this->errormessage line $this->linenumber $this->fieldname";
     }
 }

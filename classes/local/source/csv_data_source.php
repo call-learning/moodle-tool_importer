@@ -49,6 +49,11 @@ abstract class csv_data_source extends data_source {
     protected $csvimporter = null;
 
     /**
+     * @var string $csvfilepath current file path
+     */
+    protected $csvfilepath = null;
+
+    /**
      * @var int $currentrow
      */
     protected $currentrow = 0;
@@ -84,13 +89,14 @@ abstract class csv_data_source extends data_source {
         if (!is_file($csvfilepath)) {
             throw new importer_exception('cannotopencsvfile', 'tool_importer', null, $csvfilepath);
         }
+        $this->csvfilepath = $csvfilepath;
         $this->csvimporter = new csv_import_reader($importid, 'upload_course_datasource');
         $content = file_get_contents($csvfilepath);
         $this->csvimporter->load_csv_content($content, $encoding, $separator);
         $this->rowcount = count(explode("\n", $content)) - 1; // Row count minus header.
         $columns = $this->csvimporter->get_columns();
         if (!$columns) {
-            throw new importer_exception('nocolumnsdefined', 'tool_importer', null, $csvfilepath);
+            throw new importer_exception('nocolumnsdefined', 'tool_importer', null, $this->csvfilepath);
         }
         foreach ($this->get_fields_definition() as $col => $type) {
             if (!in_array($col, $columns)) {

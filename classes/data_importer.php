@@ -27,7 +27,7 @@
  */
 
 namespace tool_importer;
-use tool_importer\local\import_error;
+use tool_importer\local\import_log;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -87,23 +87,25 @@ abstract class data_importer {
         $errors = [];
         foreach ($allfields as $fieldname => $fieldvalue) {
             if (!isset($row[$fieldname]) && !empty($fieldvalue['required'])) {
-                $errors[] = new import_error($rowindex, $fieldname, 'required');
+                $errors[] = new import_log($rowindex, $fieldname, 'required');
             }
         }
         return $errors;
     }
 
     /**
-     * Check if row is valid before we transform it.
+     * Check if row is valid before we transform it
+     * It will also change the value of tan e
      *
      * This helps to catch errors before we try to transform the row.
+     *
      * @param $row
      * @param $rowindex
-     * @return array of import_error (with field name and errorcode) or null if no error
+     * @return array of import_log (with field name and errorcode) or null if no error
      */
-    public function validate_before_transform($row, $rowindex) {
-        $errors = [];
-        return $errors;
+    public function fix_before_transform(&$row, $rowindex) {
+        $logs = [];
+        return $logs;
     }
 
     /**

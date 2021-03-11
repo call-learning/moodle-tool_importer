@@ -28,7 +28,7 @@ namespace tool_importer;
 
 use progress_bar;
 use text_progress_trace;
-use tool_importer\local\import_error;
+use tool_importer\local\import_log;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -62,7 +62,7 @@ class importer {
     /**
      * @var array
      */
-    protected $errors = [];
+    protected $logs = [];
 
     /**
      * Importer constructor.
@@ -83,7 +83,7 @@ class importer {
      * Import the whole set of entities
      */
     public function import() {
-        $this->errors = [];
+        $this->logs = [];
         $rowcount = $this->source->get_total_row_count();
         foreach ($this->source as $rowindex => $row) {
             try {
@@ -99,24 +99,23 @@ class importer {
                     }
                 }
 
-                $errors = $this->importer->validate_before_transform($row, $rowindex);
-                if (!empty($errors)) {
-                    $this->errors = array_merge($this->errors, $errors);
-                    continue;
+                $logs = $this->importer->fix_before_transform($row, $rowindex);
+                if (!empty($logs)) {
+                    $this->logs = array_merge($this->logs, $logs);
                 }
                 $transformedrow = $this->transformer->transform($row);
                 $errors = $this->importer->validate($transformedrow, $rowindex);
                 if (empty($errors)) {
                     $this->importer->import_row($transformedrow);
                 } else {
-                    $this->errors = array_merge($this->errors, $errors);
+                    $this->logs = array_merge($this->logs, $errors);
                 }
             } catch(\moodle_exception $e) {
-                $this->errors[] = new import_error($rowindex,'', 'exception', $e->getMessage()
+                $this->logs[] = new import_log($rowindex,'', 'exception', $e->getMessage()
                     . 'file:'. $e->getFile().':'.$e->getLine());
             }
         }
-        return empty($this->errors);
+        return empty($this->logs);
     }
 
     /**
@@ -124,8 +123,8 @@ class importer {
      *
      * @return array of error with line, field and error code info.
      */
-    public function get_errors() {
-        return $this->errors;
+    public function get_logs() {
+        return $this->logs;
     }
 
 }
