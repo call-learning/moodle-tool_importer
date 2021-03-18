@@ -48,11 +48,11 @@ class import_log {
      * @var string
      */
     public $fieldname;
-    /**
-     * @var string
-     */
-    public $errormessage;
 
+    /**
+     * @var string error, warning...
+     */
+    public $level;
 
     /**
      * import_error constructor.
@@ -62,15 +62,17 @@ class import_log {
      * @param $errorcode
      * @param $errormessage
      */
-    public function __construct($linenumber, $fieldname, $code, $module='tool_importer',  $additionalinfo = null)  {
+    public function __construct($linenumber, $fieldname, $code, $module='tool_importer',  $additionalinfo = null, $level='error')  {
         $this->linenumber = $linenumber;
         $this->messagecode = $code;
         $this->fieldname = $fieldname;
         $this->module = $module;
         $this->additionalinfo = $additionalinfo;
+        $this->level = $level;
     }
 
     public function get_full_message() {
-        return "($this->messagecode) $$this->errormessage line $this->linenumber $this->fieldname";
+        $json = json_encode($this->additionalinfo);
+        return "$this->messagecode ($this->level): line $this->linenumber $this->fieldname - $json";
     }
 }

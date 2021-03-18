@@ -65,6 +65,10 @@ class importer {
     protected $logs = [];
 
     /**
+     * @var int number of imported rows (reset for each importation)
+     */
+    protected $rowimported = 0;
+    /**
      * Importer constructor.
      *
      * @param data_source $source
@@ -85,6 +89,7 @@ class importer {
     public function import() {
         $this->logs = [];
         $rowcount = $this->source->get_total_row_count();
+        $this->rowimported = 0;
         foreach ($this->source as $rowindex => $row) {
             try {
                 if ($this->progressbar) {
@@ -107,12 +112,12 @@ class importer {
                 $errors = $this->importer->validate($transformedrow, $rowindex);
                 if (empty($errors)) {
                     $this->importer->import_row($transformedrow);
+                    $this->rowimported++;
                 } else {
                     $this->logs = array_merge($this->logs, $errors);
                 }
             } catch(\moodle_exception $e) {
-                $this->logs[] = new import_log($rowindex,'', 'exception', $e->getMessage()
-                    . 'file:'. $e->getFile().':'.$e->getLine());
+                $this->logs[] = new import_log($rowindex,'', 'exception', 'tool_importer', $e->getMessage());
             }
         }
         return empty($this->logs);
@@ -127,4 +132,18 @@ class importer {
         return $this->logs;
     }
 
+    /**
+     * Get total rows
+     * @return mixed
+     */
+    public function get_total_row_count() {
+        return  $this->source->get_total_row_count();
+    }
+    /**
+     * Get total rows
+     * @return mixed
+     */
+    public function get_row_imported_count() {
+        return  $this->rowimported;
+    }
 }

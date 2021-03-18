@@ -49,10 +49,10 @@ class standard extends data_transformer {
      */
     public function transform($row) {
         $resultrow = [];
+        $separators = [];
         foreach ($row as $fieldname => $fieldvalue) {
             $targetfieldname = $fieldname;
             $order = 0;
-
             if (!empty($this->fieldtransformerdef[$fieldname])) {
                 // There is a transformation available.
                 $transformdefs = $this->fieldtransformerdef[$fieldname];
@@ -64,6 +64,11 @@ class standard extends data_transformer {
                     }
                     if (!empty($tdef['concatenate'])) {
                         $order = empty($tdef['concatenate']['order']) ? 0 : $tdef['concatenate']['order'];
+                        if (empty($separators[$fieldname])) {
+                            $separators[$fieldname] = [];
+                        }
+                        $separators[$fieldname][$order] = empty($tdef['concatenate']['separator']) ? $this->concatseparator :
+                            $tdef['concatenate']['separator'];
                     }
                     if (!empty($tdef['transformcallback'])) {
                         $callback = $tdef['transformcallback'];
@@ -86,7 +91,16 @@ class standard extends data_transformer {
         foreach ($resultrow as $fieldname => $fieldvalues) {
             if (count($fieldvalues) > 1) {
                 ksort($fieldvalues);
-                $flatresult[$fieldname] = implode($this->concatseparator, $fieldvalues);
+                $result = "";
+                foreach($fieldvalues as $order => $val) {
+                    if (!empty($result)) {
+                        $separator = (isset($separators[$fieldname]) && isset($separators[$fieldname][$order]))?
+                            $separators[$fieldname][$order] : $this->concatseparator;
+                        $result .= $separator;
+                    }
+                    $result .= $val;
+                }
+                $flatresult[$fieldname] = $result;
             } else {
                 $flatresult[$fieldname] = reset($fieldvalues);
             }
