@@ -22,6 +22,9 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace tool_importer\local;
+
+use Exception;
+
 defined('MOODLE_INTERNAL') || die();
 
 class import_log {
@@ -54,6 +57,7 @@ class import_log {
      */
     public $level;
 
+    const TABLE = '';
     /**
      * import_error constructor.
      *
@@ -74,5 +78,19 @@ class import_log {
     public function get_full_message() {
         $json = json_encode($this->additionalinfo);
         return "$this->messagecode ($this->level): line $this->linenumber $this->fieldname - $json";
+    }
+
+    public function __destruct() {
+        $this->persist();
+    }
+
+    protected function persist() {
+        try {
+            if (!empty(self::TABLE)) {
+                // TODO: Persit log.
+            }
+        } catch(Exception $e) {
+            debugging('Error when persisting log:'.$e->getMessage(), DEBUG_NORMAL, $e->getTrace());
+        }
     }
 }

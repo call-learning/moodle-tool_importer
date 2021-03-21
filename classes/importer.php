@@ -75,12 +75,19 @@ class importer {
      * @param data_transformer $transformer
      * @param data_importer $importer
      */
-    public function __construct(data_source $source, data_transformer $transformer, data_importer $importer, $progressbar = null) {
+    public function __construct(
+        data_source $source,
+        data_transformer $transformer,
+        data_importer $importer,
+        $progressbar = null,
+        $importlogclass = null
+    ) {
         $this->source = $source;
         $this->source->rewind();
         $this->transformer = $transformer;
         $this->importer = $importer;
         $this->progressbar = $progressbar;
+        $this->importer->set_related_source($source);
     }
 
     /**

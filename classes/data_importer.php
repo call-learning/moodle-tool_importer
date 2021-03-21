@@ -27,12 +27,21 @@
  */
 
 namespace tool_importer;
+
 use tool_importer\local\import_log;
 
 defined('MOODLE_INTERNAL') || die();
 
 abstract class data_importer {
+    /**
+     * @var array
+     */
     protected $defaultvalues = [];
+
+    /**
+     * @var data_source $source
+     */
+    protected $source = null;
 
     /**
      * Get the field definition array
@@ -141,5 +150,23 @@ abstract class data_importer {
                     "{$col}:" . json_encode($row));
             }
         }
+    }
+
+    /**
+     * Set the related source
+     *
+     * Not used very often but can be useful sometimes especially when we tweak columns names.
+     *
+     * @param data_source $source
+     */
+    public function set_related_source(data_source $source) {
+        $this->source = $source;
+    }
+
+    /**
+     * @param data_source $source
+     */
+    public function get_related_source() {
+        return $this->source;
     }
 }
