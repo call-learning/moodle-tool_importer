@@ -85,6 +85,14 @@ class inmemory_data_source extends data_source {
     public function get_total_row_count() {
         return 3;
     }
+
+    public function get_source_type() {
+        return 'memory';
+    }
+
+    public function get_source_identifier() {
+        return 'test';
+    }
 }
 
 /**
@@ -140,7 +148,7 @@ class inmemory_importer extends data_importer {
      * @param $row
      * @return mixed|void
      */
-    public function raw_import($row) {
+    public function raw_import($row, $rowindex) {
         $this->resultarray[] = $row;
     }
 }

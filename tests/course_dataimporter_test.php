@@ -44,10 +44,13 @@ class course_dataimporter_test extends advanced_testcase {
         "ResumeProduit" => field_types::TYPE_TEXT
     );
 
+    protected $csvimporter = null;
+
     /**
      * Setup
      */
     public function setUp() {
+        global $CFG;
         parent::setUp();
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
@@ -57,20 +60,25 @@ class course_dataimporter_test extends advanced_testcase {
         // Create a couple of custom fields definitions.
         $catid = $generator->create_custom_field_category([])->get('id');
         $generator->create_custom_field(['categoryid' => $catid, 'type' => 'text', 'shortname' => 'f1']);
-    }
-
-    /**
-     * @throws dml_exception
-     */
-    public function test_simple_course_import() {
-        global $CFG, $DB;
-        $csvimporter = new class(
+        // @codingStandardsIgnoreStart
+        // phpcs:disable
+        $this->csvimporter = new class(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv')
             extends \tool_importer\local\source\csv_data_source {
             public function get_fields_definition() {
                 return course_dataimporter_test::CSV_DEFINITION;
             }
         };
+        // phpcs:enable
+        // @codingStandardsIgnoreEnd
+    }
+
+    /**
+     * @throws dml_exception
+     */
+    public function test_simple_course_import() {
+        global $DB;
+        $csvimporter = $this->csvimporter;
         $transformdef = array(
             'CodeProduit' => array(array('to' => 'idnumber'), array('to' => 'shortname')),
             'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),
@@ -95,13 +103,7 @@ class course_dataimporter_test extends advanced_testcase {
      */
     public function test_simple_course_with_template_import() {
         global $CFG, $DB;
-        $csvimporter = new class(
-            $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv')
-            extends \tool_importer\local\source\csv_data_source {
-            public function get_fields_definition() {
-                return course_dataimporter_test::CSV_DEFINITION;
-            }
-        };
+        $csvimporter = $this->csvimporter;
         $transformdef = array(
             'CodeProduit' => array(array('to' => 'idnumber')),
             'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),
@@ -132,13 +134,7 @@ class course_dataimporter_test extends advanced_testcase {
      */
     public function test_simple_course_with_customfields() {
         global $CFG, $DB;
-        $csvimporter = new class(
-            $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv')
-            extends \tool_importer\local\source\csv_data_source {
-            public function get_fields_definition() {
-                return course_dataimporter_test::CSV_DEFINITION;
-            }
-        };
+        $csvimporter = $this->csvimporter;
         $transformdef = array(
             'CodeProduit' => array(array('to' => 'idnumber'), array('to' => 'cf_f1')),
             'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),

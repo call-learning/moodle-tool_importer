@@ -55,4 +55,18 @@ abstract class data_source implements Iterator {
      * @return mixed
      */
     public abstract function get_total_row_count();
+
+    /**
+     * Get source type
+     *
+     * @return string
+     */
+    public abstract function get_source_type();
+
+    /**
+     * Get source identifier
+     *
+     * @return string|null
+     */
+    public abstract function get_source_identifier();
 }

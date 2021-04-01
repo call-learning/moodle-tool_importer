@@ -32,6 +32,7 @@ namespace tool_importer\local\importer;
 use tool_importer\data_importer;
 use tool_importer\field_types;
 use tool_importer\importer_exception;
+use tool_importer\local\utils;
 use tool_importer\task\course_restore_task;
 
 defined('MOODLE_INTERNAL') || die();
@@ -80,7 +81,7 @@ class course_data_importer extends data_importer {
      * @return mixed|void
      * @throws importer_exception
      */
-    protected function raw_import($row) {
+    protected function raw_import($row, $rowindex) {
         global $DB;
         foreach ($this->get_fields_definition() as $col => $value) {
             if (empty($value['type'])) {
@@ -231,9 +232,9 @@ class course_data_importer extends data_importer {
         require_once("$CFG->dirroot/course/lib.php");
         $this->set_default_values($record);
         $record = array_merge((array) $existingrecord, $record); // Add the recordid and other set records.
-        $course = update_course((object) $record);
-        $this->restore_from_template_course($record, $course);
-        return $course;
+        update_course((object) $record);
+        $this->restore_from_template_course($record, $existingrecord);
+        return (object) $record;
     }
 
     /**

@@ -196,4 +196,22 @@ abstract class csv_data_source extends data_source {
     public function get_total_row_count() {
         return $this->rowcount;
     }
+
+    /**
+     * Get source type
+     *
+     * @return string
+     */
+    public function get_source_type() {
+        return 'file';
+    }
+
+    /**
+     * Get source identifier
+     *
+     * @return string|null
+     */
+    public function get_source_identifier() {
+        return $this->csvfilepath;
+    }
 }

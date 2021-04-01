@@ -21,76 +21,124 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_importer\local;
 
-use Exception;
+use core\persistent;
+use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
-class import_log {
-    /**
-     * @var int
-     */
-    public $linenumber;
-    /**
-     * @var string
-     */
-    public $messagecode;
+/**
+ * Class import_log
+ *
+ * @package     tool_importer
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class import_log extends persistent {
+
+    const TABLE = 'tool_importer_logs';
 
     /**
-     * @var string
-     */
-    public $module;
-
-    /**
-     * @var string
-     */
-    public $additionalinfo;
-
-    /**
-     * @var string
-     */
-    public $fieldname;
-
-    /**
-     * @var string error, warning...
-     */
-    public $level;
-
-    const TABLE = '';
-    /**
-     * import_error constructor.
+     * Create an instance of this class.
      *
-     * @param $linenumber
-     * @param $fieldname
-     * @param $errorcode
-     * @param $errormessage
+     * @param int $id If set, this is the id of an existing record, used to load the data.
+     * @param stdClass $record If set will be passed to {@link self::from_record()}.
      */
-    public function __construct($linenumber, $fieldname, $code, $module='tool_importer',  $additionalinfo = null, $level='error')  {
-        $this->linenumber = $linenumber;
-        $this->messagecode = $code;
-        $this->fieldname = $fieldname;
-        $this->module = $module;
-        $this->additionalinfo = $additionalinfo;
-        $this->level = $level;
-    }
-
-    public function get_full_message() {
-        $json = json_encode($this->additionalinfo);
-        return "$this->messagecode ($this->level): line $this->linenumber $this->fieldname - $json";
-    }
-
-    public function __destruct() {
-        $this->persist();
-    }
-
-    protected function persist() {
-        try {
-            if (!empty(self::TABLE)) {
-                // TODO: Persit log.
+    public function __construct($id = 0, stdClass $record = null) {
+        if (!empty($record) && !empty($record->type) && is_string($record->type)) {
+            $converter = array_flip(static::LEVEL_TO_SN);
+            $typeclean = trim(strtolower($record->type));
+            if (!empty($converter[$typeclean])) {
+                $record->level = $converter[$typeclean];
+            } else {
+                $record->level = self::LEVEL_INFO;
             }
-        } catch(Exception $e) {
-            debugging('Error when persisting log:'.$e->getMessage(), DEBUG_NORMAL, $e->getTrace());
         }
+        parent::__construct($id, $record);
     }
+
+    /**
+     * Usual properties definition for a persistent
+     *
+     * @return array|array[]
+     * @throws \coding_exception
+     */
+    protected static function define_properties() {
+        return array(
+            'linenumber' => array(
+                'type' => PARAM_INT,
+                'null' => NULL_NOT_ALLOWED,
+            ),
+            'messagecode' => array(
+                'type' => PARAM_TEXT,
+                'null' => NULL_NOT_ALLOWED,
+            ),
+            'module' => array(
+                'type' => PARAM_TEXT,
+            ),
+            'additionalinfo' => array(
+                'type' => PARAM_TEXT,
+            ),
+            'fieldname' => array(
+                'type' => PARAM_TEXT,
+            ),
+            'level' => array(
+                'type' => PARAM_INT,
+                'default' => import_log::LEVEL_WARNING,
+                'choices' => array(
+                    self::LEVEL_INFO,
+                    self::LEVEL_WARNING,
+                    self::LEVEL_ERROR,
+                ),
+                'format' => [
+                    'choices' => [
+                        self::LEVEL_INFO => get_string('log:level:info', 'tool_importer'),
+                        self::LEVEL_WARNING => get_string('log:level:warning', 'tool_importer'),
+                        self::LEVEL_ERROR => get_string('log:level:error', 'tool_importer'),
+                    ]
+                ]
+            ),
+            'origin' => array(
+                'type' => PARAM_TEXT,
+            ),
+            'importid' => array(
+                'type' => PARAM_INT,
+            ),
+        );
+    }
+
+    /**
+     * Get message (human readable)
+     *
+     * @return string
+     * @throws \coding_exception
+     */
+    public function get_full_message() {
+        $record =  $this->to_record();
+        $json = json_encode($this->get('additionalinfo'));
+        return "$record->messagecode ({$record->level}: line {$record->linenumber}
+        {$record->fieldname} - $json";
+    }
+
+    /**
+     * Info
+     */
+    const LEVEL_INFO = 0;
+    /**
+     * Warning
+     */
+    const LEVEL_WARNING = 1;
+    /**
+     * Error
+     */
+    const LEVEL_ERROR = 2;
+
+    const LEVEL_TO_SN = [
+        self::LEVEL_INFO => 'none',
+        self::LEVEL_ERROR => 'error',
+        self::LEVEL_WARNING => 'warning'
+    ];
 }
+

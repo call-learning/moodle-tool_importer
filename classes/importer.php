@@ -60,14 +60,14 @@ class importer {
     protected $progressbar;
 
     /**
-     * @var array
+     * @var string $module
      */
-    protected $logs = [];
-
+    protected $module = 'tool_importer';
     /**
      * @var int number of imported rows (reset for each importation)
      */
     protected $rowimported = 0;
+
     /**
      * Importer constructor.
      *
@@ -94,9 +94,9 @@ class importer {
      * Import the whole set of entities
      */
     public function import() {
-        $this->logs = [];
         $rowcount = $this->source->get_total_row_count();
         $this->rowimported = 0;
+        $haserrors = false;
         foreach ($this->source as $rowindex => $row) {
             try {
                 if ($this->progressbar) {
@@ -111,46 +111,52 @@ class importer {
                     }
                 }
 
-                $logs = $this->importer->fix_before_transform($row, $rowindex);
-                if (!empty($logs)) {
-                    $this->logs = array_merge($this->logs, $logs);
-                }
+                $this->importer->fix_before_transform($row, $rowindex);
                 $transformedrow = $this->transformer->transform($row);
                 $errors = $this->importer->validate($transformedrow, $rowindex);
                 if (empty($errors)) {
-                    $this->importer->import_row($transformedrow);
+                    $this->importer->import_row($transformedrow, $rowindex);
                     $this->rowimported++;
-                } else {
-                    $this->logs = array_merge($this->logs, $errors);
                 }
-            } catch(\moodle_exception $e) {
-                $this->logs[] = new import_log($rowindex,'', 'exception', 'tool_importer', $e->getMessage());
+            } catch (\moodle_exception $e) {
+                $haserrors = true;
+                $log = new import_log(
+                    0,
+                    (object) [
+                        'linenumber' => $rowindex,
+                        'messagecode' => 'exception',
+                        'module' => $this->module,
+                        'additionalinfo' => $e->getMessage(),
+                        'fieldname' => '',
+                        'level' => import_log::LEVEL_ERROR,
+                        'origin' => $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
+                        'importid' => $this->importer->get_import_id()
+                    ]);
+                $log->create();
             }
         }
-        return empty($this->logs);
-    }
-
-    /**
-     * Get errors
-     *
-     * @return array of error with line, field and error code info.
-     */
-    public function get_logs() {
-        return $this->logs;
+        return $haserrors;
     }
 
     /**
      * Get total rows
+     *
      * @return mixed
      */
     public function get_total_row_count() {
-        return  $this->source->get_total_row_count();
+        return $this->source->get_total_row_count();
     }
+
     /**
      * Get total rows
+     *
      * @return mixed
      */
     public function get_row_imported_count() {
-        return  $this->rowimported;
+        return $this->rowimported;
+    }
+
+    public function set_module($modulename='tool_importer') {
+        $this->module = $modulename;
     }
 }

@@ -40,6 +40,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 abstract class data_transformer {
     /**
+     * @var int $importexternalid
+     */
+    private $importexternalid = 0;
+
+    /**
      * @var array transformation definition
      */
     protected $fieldtransformerdef = array();
@@ -90,4 +95,19 @@ abstract class data_transformer {
      * @return mixed
      */
     public abstract function transform($row);
+
+    /**
+     * @return int
+     */
+    public function get_import_id() {
+        return $this->importexternalid;
+    }
+
+    /**
+     *
+     * @param int $importid
+     */
+    public function set_import_id($importid) {
+        $this->importexternalid = $importid;
+    }
 }

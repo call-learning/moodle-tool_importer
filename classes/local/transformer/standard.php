@@ -73,7 +73,8 @@ class standard extends data_transformer {
                     if (!empty($tdef['transformcallback'])) {
                         $callback = $tdef['transformcallback'];
                         if (function_exists($callback) || is_callable($callback)) {
-                            $value = call_user_func($callback, $value, $fieldname); // This can be an array if needed.
+                            $value = call_user_func($callback, $value, $fieldname, $transformdefs);
+                            // This can be an array if needed.
                         }
                     }
                     if (empty($resultrow[$targetfieldname])) {
@@ -92,9 +93,9 @@ class standard extends data_transformer {
             if (count($fieldvalues) > 1) {
                 ksort($fieldvalues);
                 $result = "";
-                foreach($fieldvalues as $order => $val) {
+                foreach ($fieldvalues as $order => $val) {
                     if (!empty($result)) {
-                        $separator = (isset($separators[$fieldname]) && isset($separators[$fieldname][$order]))?
+                        $separator = (isset($separators[$fieldname]) && isset($separators[$fieldname][$order])) ?
                             $separators[$fieldname][$order] : $this->concatseparator;
                         $result .= $separator;
                     }

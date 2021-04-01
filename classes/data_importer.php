@@ -29,10 +29,15 @@
 namespace tool_importer;
 
 use tool_importer\local\import_log;
+use tool_lpimportcsv\form\import;
 
 defined('MOODLE_INTERNAL') || die();
 
 abstract class data_importer {
+    /**
+     * @var int $importexternalid
+     */
+    protected $importexternalid = 0;
     /**
      * @var array
      */
@@ -42,6 +47,8 @@ abstract class data_importer {
      * @var data_source $source
      */
     protected $source = null;
+
+    protected $module = 'tool_importer';
 
     /**
      * Get the field definition array
@@ -57,38 +64,41 @@ abstract class data_importer {
     /**
      * Do the real import (in the persistent state/database)
      *
-     * @param $row
+     * @param int $rowindex
+     * @param array $row
      * @return mixed
      */
-    public function import_row($row) {
-        $data = $this->raw_import($row);
-        $this->after_row_imported($row, $data);
+    public function import_row($row, $rowindex) {
+        $data = $this->raw_import($row, $rowindex);
+        $this->after_row_imported($row, $data, $rowindex);
     }
 
     /**
      * Callback after each row is imported.
      *
-     * @param $row
+     * @param int $rowindex
+     * @param array $row
      * @return mixed
      */
-    public function after_row_imported($row, $data) {
+    public function after_row_imported($row, $data, $rowindex) {
         // Nothing for now but can be overridden.
     }
 
     /**
      * Do the real import (in the persistent state/database)
      *
-     * @param $row
+     * @param int $rowindex
+     * @param array $row
      * @return mixed
      */
-    protected abstract function raw_import($row);
+    protected abstract function raw_import($row, $rowindex);
 
     /**
      * Check if row is valid after transformation.
      *
      *
-     * @param $row
-     * @param $rowindex
+     * @param array $row
+     * @param int $rowindex
      * @return array of import_error (with field name and errorcode) or null if no error
      */
     public function validate($row, $rowindex) {
@@ -96,7 +106,22 @@ abstract class data_importer {
         $errors = [];
         foreach ($allfields as $fieldname => $fieldvalue) {
             if (!isset($row[$fieldname]) && !empty($fieldvalue['required'])) {
-                $errors[] = new import_log($rowindex, $fieldname, 'required');
+
+                $log = new import_log(
+                    0,
+                    (object) [
+                        'linenumber' => $rowindex,
+                        'messagecode' => 'required',
+                        'module' => $this->module,
+                        'additionalinfo' => '',
+                        'fieldname' => $fieldname,
+                        'level' => import_log::LEVEL_WARNING,
+                        'origin' => $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
+                        'importid' => $this->get_import_id()
+                    ]);
+
+                $errors[] = $log;
+
             }
         }
         return $errors;
@@ -110,11 +135,8 @@ abstract class data_importer {
      *
      * @param $row
      * @param $rowindex
-     * @return array of import_log (with field name and errorcode) or null if no error
      */
     public function fix_before_transform(&$row, $rowindex) {
-        $logs = [];
-        return $logs;
     }
 
     /**
@@ -168,5 +190,20 @@ abstract class data_importer {
      */
     public function get_related_source() {
         return $this->source;
+    }
+
+    /**
+     * @return int
+     */
+    public function get_import_id() {
+        return $this->importexternalid;
+    }
+
+    /**
+     *
+     * @param int $importid
+     */
+    public function set_import_id($importid) {
+        $this->importexternalid = $importid;
     }
 }
