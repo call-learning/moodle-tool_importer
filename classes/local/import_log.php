@@ -140,5 +140,46 @@ class import_log extends persistent {
         self::LEVEL_ERROR => 'error',
         self::LEVEL_WARNING => 'warning'
     ];
+
+    /**
+     * Create a log entry
+     *
+     * @param $rowindex
+     * @param $messagecode
+     * @param null $additionalinfo
+     * @param $fieldname
+     * @param int $level
+     * @param string $module
+     * @param null $origin
+     * @param int $importid
+     * @return import_log
+     * @throws \coding_exception
+     * @throws \core\invalid_persistent_exception
+     */
+    public static function new_log($rowindex,
+        $messagecode,
+        $additionalinfo = null,
+        $level = self::LEVEL_WARNING,
+        $fieldname = null,
+        $module = 'tool_importer',
+        $origin = null,
+        $importid = 0) {
+
+        $loginfo = [
+            'linenumber' => $rowindex,
+            'messagecode' => $messagecode,
+            'module' => $module,
+            'additionalinfo' => $additionalinfo,
+            'fieldname' => $fieldname,
+            'level' => $level,
+            'origin' => $origin,
+            'importid' => $importid
+        ];
+        $log = new import_log(
+            0,
+            (object) $loginfo);
+        $log->create();
+        return $log;
+    }
 }
 

@@ -118,19 +118,14 @@ class importer {
                 $this->update_progress_bar($rowindex, $rowcount);
             } catch (\moodle_exception $e) {
                 $haserrors = true;
-                $log = new import_log(
-                    0,
-                    (object) [
-                        'linenumber' => $rowindex,
-                        'messagecode' => 'exception',
-                        'module' => $this->module,
-                        'additionalinfo' => $e->getMessage(),
-                        'fieldname' => '',
-                        'level' => import_log::LEVEL_ERROR,
-                        'origin' => $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
-                        'importid' => $this->importer->get_import_id()
-                    ]);
-                $log->create();
+                import_log::new_log($rowindex,
+                    'exception',
+                    $e->getMessage(),
+                    import_log::LEVEL_ERROR,
+                    '',
+                    $this->module,
+                    $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
+                    $this->importer->get_import_id());
             }
         }
         $this->update_progress_bar($rowcount, $rowcount);
