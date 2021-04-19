@@ -92,8 +92,8 @@ abstract class csv_data_source extends data_source {
         $this->csvfilepath = $csvfilepath;
         $this->csvimporter = new csv_import_reader($importid, 'upload_course_datasource');
         $content = file_get_contents($csvfilepath);
-        $this->csvimporter->load_csv_content($content, $encoding, $separator);
-        $this->rowcount = count(explode("\n", $content)) - 1; // Row count minus header.
+        $this->rowcount = $this->csvimporter->load_csv_content($content, $encoding, $separator);
+        $this->rowcount = ($this->rowcount>0) ? $this->rowcount - 1: 0; // Row count minus header.
         $columns = $this->csvimporter->get_columns();
         if (!$columns) {
             throw new importer_exception('nocolumnsdefined', 'tool_importer', null, $this->csvfilepath);

@@ -115,7 +115,7 @@ class importer {
                     $this->importer->import_row($transformedrow, $rowindex);
                     $this->rowimported++;
                 }
-                $this->update_progress_bar($rowindex, $rowcount);
+                $this->update_progress_bar($this->rowimported, $rowcount);
             } catch (\moodle_exception $e) {
                 $haserrors = true;
                 import_log::new_log($rowindex,
@@ -128,7 +128,6 @@ class importer {
                     $this->importer->get_import_id());
             }
         }
-        $this->update_progress_bar($rowcount, $rowcount);
         return $haserrors;
     }
 
