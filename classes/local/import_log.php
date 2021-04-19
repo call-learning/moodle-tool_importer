@@ -86,7 +86,7 @@ class import_log extends persistent {
             ),
             'level' => array(
                 'type' => PARAM_INT,
-                'default' => import_log::LEVEL_WARNING,
+                'default' => static::LEVEL_WARNING,
                 'choices' => array(
                     self::LEVEL_INFO,
                     self::LEVEL_WARNING,
@@ -116,7 +116,7 @@ class import_log extends persistent {
      * @throws \coding_exception
      */
     public function get_full_message() {
-        $record =  $this->to_record();
+        $record = $this->to_record();
         $json = json_encode($this->get('additionalinfo'));
         return "$record->messagecode ({$record->level}: line {$record->linenumber}
         {$record->fieldname} - $json";

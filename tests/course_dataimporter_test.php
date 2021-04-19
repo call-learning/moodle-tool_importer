@@ -88,7 +88,10 @@ class course_dataimporter_test extends advanced_testcase {
 
         $importer = new importer($csvimporter,
             $transformer,
-            new course_data_importer());
+            new course_data_importer(),
+            null,
+            50
+        );
         $importer->import();
         $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
         $brachycourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-BRACHY'));
@@ -96,6 +99,7 @@ class course_dataimporter_test extends advanced_testcase {
         $this->assertNotEmpty($arthrocourse);
         $this->assertNotEmpty($brachycourse);
         $this->assertNotEmpty($coudecourse);
+        $this->assertTrue($importer->get_data_importer()->get_import_id() === 50);
     }
 
     /**

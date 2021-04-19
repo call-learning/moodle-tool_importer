@@ -74,20 +74,29 @@ class importer {
      * @param data_source $source
      * @param data_transformer $transformer
      * @param data_importer $importer
+     * @param progress_bar $progressbar
+     * @param int $importid  (null if not set)
+     * @param string $importlogclass
      */
     public function __construct(
         data_source $source,
         data_transformer $transformer,
         data_importer $importer,
         $progressbar = null,
+        $importid = null,
         $importlogclass = null
     ) {
         $this->source = $source;
         $this->source->rewind();
+        if ($importid != null) {
+            $transformer->set_import_id($importid);
+            $importer->set_import_id($importid);
+        }
         $this->transformer = $transformer;
         $this->importer = $importer;
         $this->progressbar = $progressbar;
         $this->importer->set_related_source($source);
+
     }
 
     /**
@@ -99,18 +108,6 @@ class importer {
         $haserrors = false;
         foreach ($this->source as $rowindex => $row) {
             try {
-                if ($this->progressbar) {
-                    if ($this->progressbar instanceof progress_bar) {
-                        $this->progressbar->update(
-                            $rowindex,
-                            $rowcount,
-                            get_string('process:progress', 'tool_importer'));
-                    }
-                    if ($this->progressbar instanceof text_progress_trace) {
-                        $this->progressbar->output("$rowindex/$rowcount");
-                    }
-                }
-
                 $this->importer->fix_before_transform($row, $rowindex);
                 $transformedrow = $this->transformer->transform($row);
                 $errors = $this->importer->validate($transformedrow, $rowindex);
@@ -118,6 +115,7 @@ class importer {
                     $this->importer->import_row($transformedrow, $rowindex);
                     $this->rowimported++;
                 }
+                $this->update_progress_bar($rowindex, $rowcount);
             } catch (\moodle_exception $e) {
                 $haserrors = true;
                 $log = new import_log(
@@ -135,9 +133,23 @@ class importer {
                 $log->create();
             }
         }
+        $this->update_progress_bar($rowcount, $rowcount);
         return $haserrors;
     }
 
+    protected function update_progress_bar($rowindex, $rowcount) {
+        if ($this->progressbar) {
+            if ($this->progressbar instanceof progress_bar) {
+                $this->progressbar->update(
+                    $rowindex,
+                    $rowcount,
+                    get_string('process:progress', 'tool_importer'));
+            }
+            if ($this->progressbar instanceof text_progress_trace) {
+                $this->progressbar->output("$rowindex/$rowcount");
+            }
+        }
+    }
     /**
      * Get total rows
      *
@@ -158,5 +170,12 @@ class importer {
 
     public function set_module($modulename='tool_importer') {
         $this->module = $modulename;
+    }
+
+    /**
+     * @return data_importer
+     */
+    public function get_data_importer() {
+        return $this->importer;
     }
 }
