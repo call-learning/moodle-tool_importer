@@ -124,8 +124,7 @@ class course_csv_datasource_test extends advanced_testcase {
             true,
             $importer->valid()
         );
-        $this->assertEquals(
-            null,
+        $this->assertNotNull(
             $importer->next()
         );
         $this->assertEquals(
@@ -147,7 +146,7 @@ class course_csv_datasource_test extends advanced_testcase {
             $importer->current()
         );
         $this->assertEquals(
-            false,
+            true,
             $importer->valid()
         );
     }

@@ -27,6 +27,7 @@
 namespace tool_importer;
 defined('MOODLE_INTERNAL') || die();
 use Iterator;
+use Matrix\Exception;
 
 /**
  * Class data_source
@@ -38,6 +39,17 @@ use Iterator;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class data_source implements Iterator {
+    /**
+     * Iterator is valid
+     * @var bool
+     */
+    protected $isvalid = true;
+
+    /**
+     * @var array $currentvalue
+     */
+    protected $currentvalue = null;
+
     /**
      * Get the field definition array.
      *
@@ -69,4 +81,33 @@ abstract class data_source implements Iterator {
      * @return string|null
      */
     public abstract function get_source_identifier();
+
+    /**
+     * Get next element and protect it from throwing an exc
+     *
+     * @return false|mixed
+     */
+    public function next() {
+        try {
+            $this->currentvalue = $this->retrieve_next_value();
+        } catch(\Exception $e) {
+            $this->isvalid = false;
+        }
+        return $this->currentvalue;
+    }
+
+    /**
+     * Run the next function itself
+     */
+    abstract protected function retrieve_next_value();
+
+    /**
+     * Checks if current position is valid
+     * @link https://php.net/manual/en/iterator.valid.php
+     * @return bool The return value will be casted to boolean and then evaluated.
+     * Returns true on success or false on failure.
+     */
+    public function valid() {
+        return $this->isvalid;
+    }
 }

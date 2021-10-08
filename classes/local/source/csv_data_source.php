@@ -28,9 +28,12 @@
 
 namespace tool_importer\local\source;
 
+use core\session\exception;
 use csv_import_reader;
 use tool_importer\data_source;
 use tool_importer\importer_exception;
+use tool_importer\local\utils;
+use tool_importer\validation_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -57,10 +60,6 @@ abstract class csv_data_source extends data_source {
      * @var int $currentrow
      */
     protected $currentrow = 0;
-    /**
-     * @var array $currentvalue
-     */
-    protected $currentvalue = null;
 
     /**
      * Is inited
@@ -75,33 +74,53 @@ abstract class csv_data_source extends data_source {
     protected $rowcount = 0;
 
     /**
+     * CSV columns in the right order
+     * @var array
+     */
+    protected $csvcolumns = [];
+
+    /**
      * csv_data_source constructor.
      *
      * @param $csvfilepath
      * @param string $separator
      * @param string $encoding
+     * @param string $encoding
+     * @param bool $exactcolumnname should the column name be compared on an exact basis (space and accent)
      * @throws importer_exception
      */
-    public function __construct($csvfilepath, $separator = 'semicolon', $encoding = 'utf-8') {
+    public function __construct($csvfilepath, $separator = 'semicolon', $encoding = 'utf-8', $exactcolumnname=false ) {
         global $CFG;
         require_once($CFG->libdir . '/csvlib.class.php');
         $importid = csv_import_reader::get_new_iid('upload_course_datasource');
         if (!is_file($csvfilepath)) {
-            throw new importer_exception('cannotopencsvfile', 'tool_importer', null, $csvfilepath);
+            throw new importer_exception('cannotopencsvfile', 'tool_importer', $csvfilepath);
         }
         $this->csvfilepath = $csvfilepath;
         $this->csvimporter = new csv_import_reader($importid, 'upload_course_datasource');
         $content = file_get_contents($csvfilepath);
+        if (!mb_detect_encoding($content, $encoding, true)) {
+            throw new importer_exception('wrongencoding', 'tool_importer', (object) ['file' => $csvfilepath, 'expected'=> 'utf-8']);
+        }
         $this->rowcount = $this->csvimporter->load_csv_content($content, $encoding, $separator);
         $this->rowcount = ($this->rowcount>0) ? $this->rowcount - 1: 0; // Row count minus header.
-        $columns = $this->csvimporter->get_columns();
-        if (!$columns) {
-            throw new importer_exception('nocolumnsdefined', 'tool_importer', null, $this->csvfilepath);
+        $csvheaders = $this->csvimporter->get_columns();
+        if (!$csvheaders) {
+            throw new importer_exception('nocolumnsdefined', 'tool_importer', $this->csvfilepath);
         }
-        foreach ($this->get_fields_definition() as $col => $type) {
-            if (!in_array($col, $columns)) {
-                throw new importer_exception('columnmissing', 'tool_importer', null, $col);
+        foreach ($this->get_fields_definition() as $colname => $definition) {
+            $found = false;
+            foreach($csvheaders as $colheadername) {
+                if (!$exactcolumnname && utils::compare_ws_accents(trim($colname), trim($colheadername)) === 0) {
+                    $found = true;
+                } else if ($exactcolumnname && $colname == $colheadername) {
+                    $found = true;
+                }
             }
+            if (!$found  && !empty($definition['required'])) {
+                throw new importer_exception('columnmissing', 'tool_importer', $colname);
+            }
+            $this->csvcolumns[] = $colname;
         }
     }
 
@@ -113,6 +132,7 @@ abstract class csv_data_source extends data_source {
     public function current() {
         if (!$this->isinited) {
             $this->rewind();
+            $this->isvalid = true;
         }
         return $this->currentvalue;
     }
@@ -120,12 +140,12 @@ abstract class csv_data_source extends data_source {
     /**
      * Get next element
      *
-     * @return false|mixed|void
+     * @return false|mixed
      */
-    public function next() {
+    protected function retrieve_next_value() {
         $cval = $this->csvimporter->next();
         if (!$cval) {
-            $this->currentvalue = null;
+            $this->isvalid = false;
         } else {
             $this->currentvalue = $this->get_associated_array($cval);
             $this->currentrow++;
@@ -140,8 +160,10 @@ abstract class csv_data_source extends data_source {
      * @return array
      */
     protected function get_associated_array($cval) {
-        $columns = $this->csvimporter->get_columns();
-        $value = array_combine($columns, $cval);
+        if (count($cval) != count($this->csvcolumns)) {
+            throw new \moodle_exception('wrongcolumnnumber', 'local_importer');
+        }
+        $value = array_combine($this->csvcolumns, $cval);
         $required = $this->get_fields_definition();
         return array_intersect_key($value, $required);
     }
@@ -161,7 +183,7 @@ abstract class csv_data_source extends data_source {
      * @return bool
      */
     public function valid() {
-        return (!$this->csvimporter->get_error() && $this->currentvalue != null);
+        return parent::valid() && (empty($this->csvimporter->get_error()));
     }
 
     /**
@@ -172,12 +194,9 @@ abstract class csv_data_source extends data_source {
         $this->isinited = true;
         if ($this->csvimporter->get_error()) {
             throw new importer_exception('csvimporteriniterror',
-                'tool_importer', null, $this->csvimporter->get_error());
+                'tool_importer', $this->csvimporter->get_error());
         }
-        $cval = $this->csvimporter->next();
-        if ($cval) {
-            $this->currentvalue = $this->get_associated_array($cval);
-        }
+        $this->currentvalue = $this->retrieve_next_value();
     }
 
     /**

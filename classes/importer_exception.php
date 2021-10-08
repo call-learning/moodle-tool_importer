@@ -29,4 +29,7 @@ namespace tool_importer;
 defined('MOODLE_INTERNAL') || die();
 
 class importer_exception extends \moodle_exception {
+    function __construct($errorcode, $module='', $a=null, $debuginfo=null) {
+        parent::__construct($errorcode, $module, '',$a, $debuginfo);
+    }
 }

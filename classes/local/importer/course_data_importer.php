@@ -85,18 +85,18 @@ class course_data_importer extends data_importer {
         global $DB;
         foreach ($this->get_fields_definition() as $col => $value) {
             if (empty($value['type'])) {
-                throw new importer_exception('importercolumndef', 'tool_importer', null, 'type');
+                throw new importer_exception('importercolumndef', 'tool_importer', 'type');
             }
             $type = $value['type'];
             $required = empty($value['required']) ? false : $value['required'];
             if ($required && !isset($row[$col])) {
-                throw new importer_exception('rowvaluerequired', 'tool_importer', null,
+                throw new importer_exception('rowvaluerequired', 'tool_importer',
                     "{$col}:" . json_encode($row));
             } else if (!isset($row[$col])) {
                 continue;
             }
             if (!field_types::is_valid($row[$col], $type)) {
-                throw new importer_exception('invalidrowvalue', 'tool_importer', null,
+                throw new importer_exception('invalidrowvalue', 'tool_importer',
                     "{$col}:" . json_encode($row));
             }
         }

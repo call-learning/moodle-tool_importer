@@ -75,7 +75,7 @@ class importer {
      * @param data_transformer $transformer
      * @param data_importer $importer
      * @param progress_bar $progressbar
-     * @param int $importid  (null if not set)
+     * @param int $importid (null if not set)
      * @param string $importlogclass
      */
     public function __construct(
@@ -95,8 +95,6 @@ class importer {
         $this->transformer = $transformer;
         $this->importer = $importer;
         $this->progressbar = $progressbar;
-        $this->importer->set_related_source($source);
-
     }
 
     /**
@@ -106,17 +104,20 @@ class importer {
         $rowcount = $this->source->get_total_row_count();
         $this->rowimported = 0;
         $haserrors = false;
-        foreach ($this->source as $rowindex => $row) {
+        $rowindex = 0;
+        while ($this->source->valid()) {
             try {
+                $row = $this->source->current();
                 $this->importer->fix_before_transform($row, $rowindex);
                 $transformedrow = $this->transformer->transform($row);
-                $errors = $this->importer->validate($transformedrow, $rowindex);
-                if (empty($errors)) {
-                    $this->importer->import_row($transformedrow, $rowindex);
-                    $this->rowimported++;
-                }
+                $this->importer->validate($transformedrow, $rowindex);
+                $this->importer->import_row($transformedrow, $rowindex);
+                $this->rowimported++;
                 $this->update_progress_bar($this->rowimported, $rowcount);
-            } catch (\moodle_exception $e) {
+            } catch (validation_exception $e) {
+                $haserrors = true;
+                $e->get_import_log()->create();
+            } catch (\Exception $e) {
                 $haserrors = true;
                 import_log::new_log($rowindex,
                     'exception',
@@ -126,6 +127,9 @@ class importer {
                     $this->module,
                     $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
                     $this->importer->get_import_id());
+            } finally {
+                $rowindex++;
+                $this->source->next(); // This can lead to an exception here.
             }
         }
         return $haserrors;
@@ -144,6 +148,7 @@ class importer {
             }
         }
     }
+
     /**
      * Get total rows
      *
@@ -162,7 +167,7 @@ class importer {
         return $this->rowimported;
     }
 
-    public function set_module($modulename='tool_importer') {
+    public function set_module($modulename = 'tool_importer') {
         $this->module = $modulename;
     }
 

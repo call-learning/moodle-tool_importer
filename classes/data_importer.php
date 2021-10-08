@@ -48,8 +48,19 @@ abstract class data_importer {
      */
     protected $source = null;
 
+    /**
+     * Current module
+     *
+     * @var string
+     */
     protected $module = 'tool_importer';
 
+    /**
+     * data_importer constructor.
+     */
+    public function __construct(data_source $source) {
+        $this->source = $source;
+    }
     /**
      * Get the field definition array
      *
@@ -59,7 +70,9 @@ abstract class data_importer {
      *
      * @return array
      */
-    public abstract function get_fields_definition();
+    public function get_fields_definition() {
+        return $this->source->get_fields_definition();
+    }
 
     /**
      * Do the real import (in the persistent state/database)
@@ -99,37 +112,46 @@ abstract class data_importer {
      *
      * @param array $row
      * @param int $rowindex
-     * @return array of import_error (with field name and errorcode) or null if no error
+     * @throw validation_exception
      */
     public function validate($row, $rowindex) {
         $allfields = $this->get_fields_definition();
-        $errors = [];
         foreach ($allfields as $fieldname => $fieldvalue) {
-            if (!isset($row[$fieldname]) && !empty($fieldvalue['required'])) {
-
-                $log = new import_log(
-                    0,
-                    (object) [
-                        'linenumber' => $rowindex,
-                        'messagecode' => 'required',
-                        'module' => $this->module,
-                        'additionalinfo' => '',
-                        'fieldname' => $fieldname,
-                        'level' => import_log::LEVEL_WARNING,
-                        'origin' => $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
-                        'importid' => $this->get_import_id()
-                    ]);
-
-                $errors[] = $log;
-
+            if (!isset($row[$fieldname])){
+                if (!empty($fieldvalue['required'])) {
+                    throw new validation_exception('required',
+                        $rowindex,
+                        $fieldname,
+                        $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
+                        $this->get_import_id(),
+                        $this->module,
+                        'validationexception',
+                        import_log::LEVEL_WARNING);
+                }
+            } else {
+                switch ($fieldvalue['type']) {
+                    case field_types::TYPE_TEXT:
+                        break;
+                    case field_types::TYPE_INT:
+                        if (!is_numeric($row[$fieldname])) {
+                            throw new validation_exception('wrongtype',
+                                $rowindex,
+                                $fieldname,
+                                $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
+                                $this->get_import_id(),
+                                $this->module,
+                                'validationexception',
+                                import_log::LEVEL_WARNING);
+                        }
+                        break;
+                }
             }
         }
-        return $errors;
     }
 
     /**
      * Check if row is valid before we transform it
-     * It will also change the value of tan e
+     * It will also change the value
      *
      * This helps to catch errors before we try to transform the row.
      *
@@ -157,32 +179,21 @@ abstract class data_importer {
     public function basic_validations($row) {
         foreach ($this->get_fields_definition() as $col => $value) {
             if (empty($value['type'])) {
-                throw new importer_exception('importercolumndef', 'tool_importer', null, 'type');
+                throw new importer_exception('importercolumndef', 'tool_importer', 'type');
             }
             $type = $value['type'];
             $required = empty($value['required']) ? false : $value['required'];
             if ($required && !isset($row[$col])) {
-                throw new importer_exception('rowvaluerequired', 'tool_importer', null,
+                throw new importer_exception('rowvaluerequired', 'tool_importer',
                     "{$col}:" . json_encode($row));
             } else if (!isset($row[$col])) {
                 continue;
             }
             if (!field_types::is_valid($row[$col], $type)) {
-                throw new importer_exception('invalidrowvalue', 'tool_importer', null,
+                throw new importer_exception('invalidrowvalue', 'tool_importer',
                     "{$col}:" . json_encode($row));
             }
         }
-    }
-
-    /**
-     * Set the related source
-     *
-     * Not used very often but can be useful sometimes especially when we tweak columns names.
-     *
-     * @param data_source $source
-     */
-    public function set_related_source(data_source $source) {
-        $this->source = $source;
     }
 
     /**
