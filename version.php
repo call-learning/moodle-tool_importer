@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_importer';
-$plugin->release = '0.2.0';
-$plugin->version = 2021310300;
+$plugin->release = '0.3.0';
+$plugin->version = 2021310302;
 $plugin->requires = 2019111800;
 $plugin->maturity = MATURITY_ALPHA;

@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 use tool_importer\field_types;
 use tool_importer\importer;
 use tool_importer\local\transformer\standard;
@@ -158,6 +159,9 @@ class basic_tools_test extends advanced_testcase {
             ];
     }
 
+    /**
+     * Field definition
+     */
     const FIELD_DEFINITION =
         [
             "Colonne 1" => [
@@ -175,7 +179,9 @@ class basic_tools_test extends advanced_testcase {
 
     /**
      * Test basic importation process
-     *
+     * @param string $filename
+     * @param array $results
+     * @param array $errors
      * @dataProvider basic_csv_dataprovider
      */
     public function test_importer_csv($filename, $results, $errors) {
@@ -185,6 +191,101 @@ class basic_tools_test extends advanced_testcase {
         if (!empty($results['exception'])) {
             $this->expectException($results['exception']);
         }
+        $importer = $this->create_importer_from_params($filename);
+        $haserror = $importer->import();
+        $this->assertEquals($results['haserror'], $haserror);
+        $this->assertEquals($errors,
+            array_map(function($log) {
+                return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
+            }, \tool_importer\local\import_log::get_records())
+        );
+    }
+
+    /**
+     * Data provider for basic import
+     *
+     * @return array[]
+     */
+    public function basic_csv_dataprovider() {
+        return [
+            'oksample' => [
+                'filename' => 'csv_sample1.csv',
+                'results' => [
+                    'haserror' => false,
+                ],
+                'errors' => []
+            ],
+            'issue with encoding' => [
+                'filename' => 'csv_sample2_wrong_encoding.csv',
+                'results' => [
+                    'haserror' => true,
+                    'exception' => \tool_importer\importer_exception::class
+                ],
+                'errors' => []
+            ],
+            'issue with coltype' => [
+                'filename' => 'csv_sample3_wrong_coltype.csv',
+                'results' => [
+                    'haserror' => true,
+                ],
+                'errors' => [
+                    [
+                        'messagecode' => 'wrongtype',
+                        'linenumber' => '1',
+                        'fieldname' => 'Colonne 1'
+                    ]
+                ]
+            ],
+            'issue with required column' => [
+                'filename' => 'csv_sample4_colmissing.csv',
+                'results' => [
+                    'haserror' => true,
+                    'exception' => \tool_importer\importer_exception::class
+                ],
+                'errors' => []
+            ],
+            'issue with specialchars' => [
+                'filename' => 'csv_sample5_colwithspecialchars.csv',
+                'results' => [
+                    'haserror' => false,
+                ],
+                'errors' => []
+            ],
+        ];
+    }
+
+    /**
+     * Test validate
+     * @param string $filename
+     * @param array $results
+     * @param array $errors
+     * @dataProvider basic_csv_dataprovider
+     * @throws dml_transaction_exception
+     */
+    public function test_validate_basic($filename, $results, $errors) {
+        $this->resetAfterTest();
+        if (!empty($results['exception'])) {
+            $this->expectException($results['exception']);
+        }
+        $importer = $this->create_importer_from_params($filename);
+        $haserror = $importer->validate();
+        $this->assertEmpty(\tool_importer\local\import_log::get_records());
+        $this->assertEquals($results['haserror'], $haserror);
+        $this->assertEquals($errors,
+            array_map(function($log) {
+                return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
+            }, \tool_importer\local\validation_log::get_records())
+        );
+    }
+
+    /**
+     * Create importer and csv importer in one go.
+     *
+     * @param $filename
+     * @return importer
+     */
+    protected function create_importer_from_params($filename) {
+        global $CFG;
         $csvimporter = new class(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/' . $filename)
             extends \tool_importer\local\source\csv_data_source {
@@ -215,73 +316,7 @@ class basic_tools_test extends advanced_testcase {
             null,
             50
         );
-        $result = $importer->import();
-        $this->assertEquals($results['returnvalue'], $result);
-        $this->assertEquals($errors,
-            array_map(function($log) {
-                return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
-            }, \tool_importer\local\import_log::get_records())
-        );
-    }
-
-    /**
-     * Data provider for basic import
-     *
-     * @return array[]
-     */
-    public function basic_csv_dataprovider() {
-        return [
-            'oksample' => [
-                'filename' => 'csv_sample1.csv',
-                'results' => [
-                    'returnvalue' => false,
-                ],
-                'errors' => []
-            ],
-            'issue with encoding' => [
-                'filename' => 'csv_sample2_wrong_encoding.csv',
-                'results' => [
-                    'returnvalue' => true,
-                    'exception' => \tool_importer\importer_exception::class
-                ],
-                'errors' => []
-            ],
-            'issue with coltype' => [
-                'filename' => 'csv_sample3_wrong_coltype.csv',
-                'results' => [
-                    'returnvalue' => true,
-                ],
-                'errors' => [
-                    [
-                        'messagecode' => 'wrongtype',
-                        'linenumber' => '1',
-                        'fieldname' => 'Colonne 1'
-                    ]
-                ]
-            ],
-            'issue with required column' => [
-                'filename' => 'csv_sample4_colmissing.csv',
-                'results' => [
-                    'returnvalue' => true,
-                    'exception' => \tool_importer\importer_exception::class
-                ],
-                'errors' => []
-            ],
-            'issue with specialchars' => [
-                'filename' => 'csv_sample5_colwithspecialchars.csv',
-                'results' => [
-                    'returnvalue' => false,
-                ],
-                'errors' => []
-            ],
-        ];
-    }
-
-    public function test_validate_basic() {
-        //$inmemoryimporter = new inmemory_importer();
-        //$importer = new importer(new inmemory_data_source(), new minimal_transformer(), $inmemoryimporter);
-        //$importer->validate();
+        return $importer;
     }
 
 }
-

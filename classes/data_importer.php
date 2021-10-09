@@ -14,6 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_importer;
+
+use tool_importer\local\log_levels;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Data importer class.
  *
@@ -25,14 +31,6 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_importer;
-
-use tool_importer\local\import_log;
-use tool_lpimportcsv\form\import;
-
-defined('MOODLE_INTERNAL') || die();
-
 abstract class data_importer {
     /**
      * @var int $importexternalid
@@ -57,10 +55,13 @@ abstract class data_importer {
 
     /**
      * data_importer constructor.
+     *
+     * @param data_source $source
      */
     public function __construct(data_source $source) {
         $this->source = $source;
     }
+
     /**
      * Get the field definition array
      *
@@ -77,8 +78,8 @@ abstract class data_importer {
     /**
      * Do the real import (in the persistent state/database)
      *
-     * @param int $rowindex
      * @param array $row
+     * @param int $rowindex
      * @return mixed
      */
     public function import_row($row, $rowindex) {
@@ -89,9 +90,9 @@ abstract class data_importer {
     /**
      * Callback after each row is imported.
      *
-     * @param int $rowindex
      * @param array $row
-     * @return mixed
+     * @param mixed $data
+     * @param int $rowindex
      */
     public function after_row_imported($row, $data, $rowindex) {
         // Nothing for now but can be overridden.
@@ -100,11 +101,12 @@ abstract class data_importer {
     /**
      * Do the real import (in the persistent state/database)
      *
-     * @param int $rowindex
      * @param array $row
+     * @param int $rowindex
+     *
      * @return mixed
      */
-    protected abstract function raw_import($row, $rowindex);
+    abstract protected function raw_import($row, $rowindex);
 
     /**
      * Check if row is valid after transformation.
@@ -112,21 +114,19 @@ abstract class data_importer {
      *
      * @param array $row
      * @param int $rowindex
-     * @throw validation_exception
+     * @throws validation_exception
      */
     public function validate($row, $rowindex) {
         $allfields = $this->get_fields_definition();
         foreach ($allfields as $fieldname => $fieldvalue) {
-            if (!isset($row[$fieldname])){
+            if (!isset($row[$fieldname])) {
                 if (!empty($fieldvalue['required'])) {
                     throw new validation_exception('required',
                         $rowindex,
                         $fieldname,
-                        $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
-                        $this->get_import_id(),
                         $this->module,
-                        'validationexception',
-                        import_log::LEVEL_WARNING);
+                        null,
+                        log_levels::LEVEL_WARNING);
                 }
             } else {
                 switch ($fieldvalue['type']) {
@@ -137,11 +137,10 @@ abstract class data_importer {
                             throw new validation_exception('wrongtype',
                                 $rowindex,
                                 $fieldname,
-                                $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
-                                $this->get_import_id(),
                                 $this->module,
-                                'validationexception',
-                                import_log::LEVEL_WARNING);
+                                null,
+                                log_levels::LEVEL_WARNING
+                            );
                         }
                         break;
                 }
@@ -155,8 +154,8 @@ abstract class data_importer {
      *
      * This helps to catch errors before we try to transform the row.
      *
-     * @param $row
-     * @param $rowindex
+     * @param array $row
+     * @param int $rowindex
      */
     public function fix_before_transform(&$row, $rowindex) {
     }
@@ -165,7 +164,7 @@ abstract class data_importer {
      * Set default value for given column
      *
      * @param string $key column name
-     * @param $value
+     * @param mixed $value
      */
     public function set_default_value($key, $value) {
         $this->defaultvalues[$key] = $value;
@@ -173,7 +172,7 @@ abstract class data_importer {
 
     /**
      * Make sure the fields validate correctly
-     *
+     * @param array $row
      * @throws importer_exception
      */
     public function basic_validations($row) {
@@ -197,13 +196,15 @@ abstract class data_importer {
     }
 
     /**
-     * @param data_source $source
+     * Get related data source
      */
     public function get_related_source() {
         return $this->source;
     }
 
     /**
+     * Get import id
+     *
      * @return int
      */
     public function get_import_id() {
@@ -211,6 +212,7 @@ abstract class data_importer {
     }
 
     /**
+     * Set import id
      *
      * @param int $importid
      */

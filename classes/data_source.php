@@ -24,15 +24,16 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_importer;
 defined('MOODLE_INTERNAL') || die();
+
 use Iterator;
-use Matrix\Exception;
 
 /**
  * Class data_source
  *
- * This class is an interator and can be used as such.
+ * This class is an iterator and can be used as such. Read data row by row.
  *
  * @package     tool_importer
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
@@ -41,6 +42,7 @@ use Matrix\Exception;
 abstract class data_source implements Iterator {
     /**
      * Iterator is valid
+     *
      * @var bool
      */
     protected $isvalid = true;
@@ -60,27 +62,28 @@ abstract class data_source implements Iterator {
      *
      * @return array
      */
-    public abstract function get_fields_definition();
+    abstract public function get_fields_definition();
 
     /**
      * Get the total number of records
+     *
      * @return mixed
      */
-    public abstract function get_total_row_count();
+    abstract public function get_total_row_count();
 
     /**
      * Get source type
      *
      * @return string
      */
-    public abstract function get_source_type();
+    abstract public function get_source_type();
 
     /**
      * Get source identifier
      *
      * @return string|null
      */
-    public abstract function get_source_identifier();
+    abstract public function get_source_identifier();
 
     /**
      * Get next element and protect it from throwing an exc
@@ -90,7 +93,7 @@ abstract class data_source implements Iterator {
     public function next() {
         try {
             $this->currentvalue = $this->retrieve_next_value();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->isvalid = false;
         }
         return $this->currentvalue;
@@ -103,6 +106,7 @@ abstract class data_source implements Iterator {
 
     /**
      * Checks if current position is valid
+     *
      * @link https://php.net/manual/en/iterator.valid.php
      * @return bool The return value will be casted to boolean and then evaluated.
      * Returns true on success or false on failure.

@@ -57,20 +57,19 @@ class course_sample1_csv extends \tool_importer\local\source\csv_data_source {
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_csv_datasource_test extends advanced_testcase {
-
     /**
      * Test data
      */
-    const LOREM_IPSUM = '<p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit'
-    . ' anim id est laborum <br/> Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu '
-    . 'fugiat nulla pariatur.<br />  Etre capable de se rep&eacute;rer dans un espace clos avec un arthroscope'
-    . '<br />  Maitriser la triangulation<br />  Connaitre l&rsquo;organisation pratique de la pr&eacute;paration'
-    . ' d&rsquo;une intervention sous arthroscopie.<br />  Connaitre et maitriser les voies'
-    . ' d&rsquo;abord arthroscopique de l&rsquo;&eacute;paule du chien<br />  Connaitre et maitriser les '
-    . 'voies d&rsquo;abord arthroscopique du coude du chien<br />  Savoir rechercher les diff&eacute;rentes ' .
-    'sites d&rsquo;exploration dans l&rsquo;&eacute;paule du chien<br />  Savoir rechercher les ' .
-    'diff&eacute;rentes sites d&rsquo;exploration dans le coude du chien<br />  Connaitre les '
-    . 'diff&eacute;rentes l&eacute;sions de l&rsquo;&eacute;paule chez le chien<br />  '
+    const LOREM_IPSUM = '<p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit '
+    . 'anim id est laborum <br/> Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu '
+    . 'fugiat nulla pariatur.<br />  Etre capable de se rep&eacute;rer dans un espace clos avec un arthroscope '
+    . '<br />  Maitriser la triangulation<br />  Connaitre l&rsquo;organisation pratique de la pr&eacute;paration '
+    . 'd&rsquo;une intervention sous arthroscopie.<br />  Connaitre et maitriser les voies '
+    . 'd&rsquo;abord arthroscopique de l&rsquo;&eacute;paule du chien<br />  Connaitre et maitriser les '
+    . 'voies d&rsquo;abord arthroscopique du coude du chien<br />  Savoir rechercher les diff&eacute;rentes '
+    . 'sites d&rsquo;exploration dans l&rsquo;&eacute;paule du chien<br />  Savoir rechercher les '
+    . 'diff&eacute;rentes sites d&rsquo;exploration dans le coude du chien<br />  Connaitre les '
+    . 'diff&eacute;rentes l&eacute;sions de l&rsquo;&eacute;paule chez le chien<br /> '
     . 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor '
     . 'incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation '
     . 'ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>';
@@ -78,7 +77,7 @@ class course_csv_datasource_test extends advanced_testcase {
     /**
      * Setup
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();

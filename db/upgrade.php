@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @throws upgrade_exception
  */
 function xmldb_tool_importer_upgrade($oldversion) {
-    global $CFG, $DB;
+    global $DB;
 
     $dbman = $DB->get_manager();
 
@@ -68,6 +68,35 @@ function xmldb_tool_importer_upgrade($oldversion) {
 
         // Importer savepoint reached.
         upgrade_plugin_savepoint(true, 2021310300, 'tool', 'importer');
+    }
+    if ($oldversion < 2021310302) {
+        // Define table tool_importer_validations to be created.
+        $table = new xmldb_table('tool_importer_validations');
+
+        // Adding fields to table tool_importer_validations.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('linenumber', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('messagecode', XMLDB_TYPE_CHAR, '254', null, null, null, null);
+        $table->add_field('module', XMLDB_TYPE_CHAR, '254', null, null, null, null);
+        $table->add_field('additionalinfo', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('fieldname', XMLDB_TYPE_CHAR, '254', null, null, null, null);
+        $table->add_field('level', XMLDB_TYPE_INTEGER, '4', null, null, null, null);
+        $table->add_field('origin', XMLDB_TYPE_CHAR, '1024', null, null, null, null);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table tool_importer_validations.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
+
+        // Conditionally launch create table for tool_importer_validations.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Importer savepoint reached.
+        upgrade_plugin_savepoint(true, 2021310302, 'tool', 'importer');
     }
     return true;
 }

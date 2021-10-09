@@ -27,8 +27,6 @@
 
 namespace tool_importer;
 
-use stdClass;
-
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -82,6 +80,7 @@ abstract class data_transformer {
      * - to: A field or a list of fields. This will also change the way we interpret the transformcallback
      * - transformcallback: Transform function (before concatenation), with two parameters ($value, $column)
      * - concatenate: If a given field is assigned several times, do we concatenate and in which order.
+     *
      * @return array
      */
     public function get_fields_transformers() {
@@ -94,9 +93,11 @@ abstract class data_transformer {
      * @param array $row an associative array (column => value)
      * @return mixed
      */
-    public abstract function transform($row);
+    abstract public function transform($row);
 
     /**
+     * Get import identifier
+     *
      * @return int
      */
     public function get_import_id() {
@@ -104,6 +105,7 @@ abstract class data_transformer {
     }
 
     /**
+     * Set import identifier
      *
      * @param int $importid
      */

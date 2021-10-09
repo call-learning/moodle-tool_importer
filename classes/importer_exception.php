@@ -14,6 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_importer;
+
+use tool_importer\local\log_levels;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Data importer exception.
  *
@@ -25,11 +31,44 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace tool_importer;
-defined('MOODLE_INTERNAL') || die();
-
 class importer_exception extends \moodle_exception {
-    function __construct($errorcode, $module='', $a=null, $debuginfo=null) {
-        parent::__construct($errorcode, $module, '',$a, $debuginfo);
+    /**
+     * @var object $exceptioninfo information about the validation issue
+     */
+    private $exceptioninfo = null;
+
+    /**
+     * Create a validation exception
+     *
+     * @param string $messagecode
+     * @param int $linenumber
+     * @param string $fieldname
+     * @param string $module
+     * @param null $additionalinfo
+     * @param int $level
+     * @param null $debuginfo
+     */
+    public function __construct($messagecode, $linenumber, $fieldname, $module = 'local_import', $additionalinfo = null,
+        $level = log_levels::LEVEL_WARNING, $debuginfo = null) {
+        $this->exceptioninfo = (object)
+        compact(
+            'messagecode',
+            'linenumber',
+            'fieldname',
+            'module',
+            'additionalinfo',
+            'level',
+            'additionalinfo'
+        );
+        parent::__construct($messagecode, $module, '', $additionalinfo, $debuginfo);
+    }
+
+    /**
+     * Get all available about importation status (rowindex, ...)
+     *
+     * @return object
+     */
+    public function get_importation_info() {
+        return $this->exceptioninfo;
     }
 }

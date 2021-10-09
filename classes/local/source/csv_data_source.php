@@ -28,12 +28,10 @@
 
 namespace tool_importer\local\source;
 
-use core\session\exception;
 use csv_import_reader;
 use tool_importer\data_source;
 use tool_importer\importer_exception;
 use tool_importer\local\utils;
-use tool_importer\validation_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -63,18 +61,21 @@ abstract class csv_data_source extends data_source {
 
     /**
      * Is inited
+     *
      * @var bool
      */
     protected $isinited = false;
 
     /**
      * Total number of rows.
+     *
      * @var int
      */
     protected $rowcount = 0;
 
     /**
      * CSV columns in the right order
+     *
      * @var array
      */
     protected $csvcolumns = [];
@@ -82,14 +83,13 @@ abstract class csv_data_source extends data_source {
     /**
      * csv_data_source constructor.
      *
-     * @param $csvfilepath
+     * @param string $csvfilepath
      * @param string $separator
-     * @param string $encoding
      * @param string $encoding
      * @param bool $exactcolumnname should the column name be compared on an exact basis (space and accent)
      * @throws importer_exception
      */
-    public function __construct($csvfilepath, $separator = 'semicolon', $encoding = 'utf-8', $exactcolumnname=false ) {
+    public function __construct($csvfilepath, $separator = 'semicolon', $encoding = 'utf-8', $exactcolumnname = false) {
         global $CFG;
         require_once($CFG->libdir . '/csvlib.class.php');
         $importid = csv_import_reader::get_new_iid('upload_course_datasource');
@@ -100,24 +100,25 @@ abstract class csv_data_source extends data_source {
         $this->csvimporter = new csv_import_reader($importid, 'upload_course_datasource');
         $content = file_get_contents($csvfilepath);
         if (!mb_detect_encoding($content, $encoding, true)) {
-            throw new importer_exception('wrongencoding', 'tool_importer', (object) ['file' => $csvfilepath, 'expected'=> 'utf-8']);
+            throw new importer_exception('wrongencoding', 'tool_importer',
+                (object) ['file' => $csvfilepath, 'expected' => 'utf-8']);
         }
         $this->rowcount = $this->csvimporter->load_csv_content($content, $encoding, $separator);
-        $this->rowcount = ($this->rowcount>0) ? $this->rowcount - 1: 0; // Row count minus header.
+        $this->rowcount = ($this->rowcount > 0) ? $this->rowcount - 1 : 0; // Row count minus header.
         $csvheaders = $this->csvimporter->get_columns();
         if (!$csvheaders) {
             throw new importer_exception('nocolumnsdefined', 'tool_importer', $this->csvfilepath);
         }
         foreach ($this->get_fields_definition() as $colname => $definition) {
             $found = false;
-            foreach($csvheaders as $colheadername) {
+            foreach ($csvheaders as $colheadername) {
                 if (!$exactcolumnname && utils::compare_ws_accents(trim($colname), trim($colheadername)) === 0) {
                     $found = true;
                 } else if ($exactcolumnname && $colname == $colheadername) {
                     $found = true;
                 }
             }
-            if (!$found  && !empty($definition['required'])) {
+            if (!$found && !empty($definition['required'])) {
                 throw new importer_exception('columnmissing', 'tool_importer', $colname);
             }
             $this->csvcolumns[] = $colname;
@@ -156,7 +157,7 @@ abstract class csv_data_source extends data_source {
     /**
      * Get associated array from current value
      *
-     * @param $cval
+     * @param mixed $cval
      * @return array
      */
     protected function get_associated_array($cval) {

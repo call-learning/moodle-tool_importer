@@ -14,10 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Local utils function for import routines and other.
+ *
+ * @package     tool_importer
+ * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace tool_importer\local;
 
 use core\persistent;
-use Exception;
 use stdClass;
 use tool_importer\data_source;
 use tool_importer\importer_exception;
@@ -25,24 +32,22 @@ use tool_importer\importer_exception;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class import_log
+ * Class validation_log
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class import_log extends persistent {
+class validation_log extends persistent {
 
-    /**
-     * Related table
-     */
-    const TABLE = 'tool_importer_logs';
+    /** @var string TABLE */
+    const TABLE = 'tool_importer_validations';
 
     /**
      * Create an instance of this class.
      *
      * @param int $id If set, this is the id of an existing record, used to load the data.
-     * @param stdClass|null $record If set will be passed to from_record.
+     * @param stdClass|null $record If set will be passed to from_record
      */
     public function __construct($id = 0, stdClass $record = null) {
         if (!empty($record) && !empty($record->type) && is_string($record->type)) {
@@ -97,9 +102,6 @@ class import_log extends persistent {
             'origin' => array(
                 'type' => PARAM_TEXT,
             ),
-            'importid' => array(
-                'type' => PARAM_INT,
-            ),
         );
     }
 
@@ -121,37 +123,11 @@ class import_log extends persistent {
      *
      * @param importer_exception $e
      * @param data_source $source
-     * @param int $importid
-     * @return import_log
+     * @return validation_log
      */
-    public static function from_importer_exception(importer_exception $e, data_source $source, int $importid) {
+    public static function from_importer_exception(importer_exception $e, data_source $source) {
         $importloginfo = $e->get_importation_info();
         $importloginfo->origin = $source->get_source_type() . ':' . $source->get_source_identifier();
-        $importloginfo->importid = $importid;
-        return new import_log(0, $importloginfo);
-    }
-
-    /**
-     * From generic exception
-     *
-     * @param Exception $e
-     * @param int $linenumber
-     * @param string $module
-     * @param data_source $source
-     * @param int $importid
-     * @param string $messagecode
-     * @param string $fieldname
-     * @param string $additionalinfo
-     * @return import_log
-     */
-    public static function from_generic_exception(Exception $e, int $linenumber, string $module, data_source $source,
-        int $importid, string $messagecode = 'exception', $fieldname = '', $additionalinfo = '') {
-        $importloginfo = (object) compact(
-            ['messagecode', 'module', 'linenumber', 'fieldname', 'messagecode', 'additionalinfo']
-        );
-        $importloginfo->level = log_levels::LEVEL_ERROR;
-        $importloginfo->origin = $source->get_source_type() . ':' . $source->get_source_identifier();
-        $importloginfo->importid = $importid;
-        return new import_log(0, $importloginfo);
+        return new validation_log(0, $importloginfo);
     }
 }

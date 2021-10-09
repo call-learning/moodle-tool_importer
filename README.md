@@ -1,5 +1,9 @@
 # Data Importer #
 
+[![Test: Status](https://github.com/call-learning/moodle-tool_importer/actions/workflows/ci.yml/badge.svg)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/ci.yml)
+[![CI Tests (Linting)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/lint.yml/badge.svg)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/lint.yml)
+
+
 (Still work in progress)
 
 Generic data importer. Currently allows to import and sync course data in a more

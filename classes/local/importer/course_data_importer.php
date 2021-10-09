@@ -14,6 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_importer\local\importer;
+
+use tool_importer\data_importer;
+use tool_importer\field_types;
+use tool_importer\importer_exception;
+use tool_importer\local\utils;
+use tool_importer\task\course_restore_task;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * CSV Data source for courses
  *
@@ -25,33 +35,17 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_importer\local\importer;
-
-
-use tool_importer\data_importer;
-use tool_importer\field_types;
-use tool_importer\importer_exception;
-use tool_importer\local\utils;
-use tool_importer\task\course_restore_task;
-
-defined('MOODLE_INTERNAL') || die();
-
-/**
- * Class data_importer
- *
- * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class course_data_importer extends data_importer {
 
+    /**
+     * @var string $cfprefix
+     */
     protected $cfprefix = "";
 
     /**
      * data_importer constructor.
      *
-     * @param null $defaultvals additional default values
+     * @param mixed $defaultvals additional default values
      * @param string $customfieldsprefix
      * @throws \dml_exception
      */
@@ -78,6 +72,7 @@ class course_data_importer extends data_importer {
      * Update or create a course
      *
      * @param array $row associative array storing the record
+     * @param int $rowindex
      * @return mixed|void
      * @throws importer_exception
      */
@@ -206,7 +201,7 @@ class course_data_importer extends data_importer {
     /**
      * Create course
      *
-     * @param $record
+     * @param object $record
      * @return object $course
      * @throws \moodle_exception
      */
@@ -222,8 +217,8 @@ class course_data_importer extends data_importer {
     /**
      * Update existing course
      *
-     * @param $record
-     * @param $existingrecord
+     * @param object $record
+     * @param object $existingrecord
      * @return object $course
      * @throws \moodle_exception
      */
@@ -240,7 +235,7 @@ class course_data_importer extends data_importer {
     /**
      * Set default values for record
      *
-     * @param $record
+     * @param object $record
      * @throws \dml_exception
      */
     protected function set_default_values(&$record) {
@@ -253,8 +248,8 @@ class course_data_importer extends data_importer {
     /**
      * Restore from a given course template
      *
-     * @param $record
-     * @param $course
+     * @param object $record
+     * @param object $course
      * @throws \moodle_exception
      */
     protected function restore_from_template_course($record, $course) {

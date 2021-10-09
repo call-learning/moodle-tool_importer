@@ -29,6 +29,7 @@ namespace tool_importer;
 use progress_bar;
 use text_progress_trace;
 use tool_importer\local\import_log;
+use tool_importer\local\validation_log;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -69,6 +70,12 @@ class importer {
     protected $rowimported = 0;
 
     /**
+     * @var $validationtempfile null Validation temporary file. This is necessary as validation relies on
+     * transaction, so we need to use another mean of storage.
+     */
+    protected $validationtempfile = null;
+
+    /**
      * Importer constructor.
      *
      * @param data_source $source
@@ -95,6 +102,8 @@ class importer {
         $this->transformer = $transformer;
         $this->importer = $importer;
         $this->progressbar = $progressbar;
+        $tempfolder = make_temp_directory('tool_importer');
+        $this->validationtempfile = $tempfolder . '/' . rand();
     }
 
     /**
@@ -116,17 +125,13 @@ class importer {
                 $this->update_progress_bar($this->rowimported, $rowcount);
             } catch (validation_exception $e) {
                 $haserrors = true;
-                $e->get_import_log()->create();
+                $log = import_log::from_importer_exception($e, $this->source, $this->importer->get_import_id());
+                $log->create();
             } catch (\Exception $e) {
                 $haserrors = true;
-                import_log::new_log($rowindex,
-                    'exception',
-                    $e->getMessage(),
-                    import_log::LEVEL_ERROR,
-                    '',
-                    $this->module,
-                    $this->source->get_source_type() . ':' . $this->source->get_source_identifier(),
+                $log = import_log::from_generic_exception($e, $rowindex, $this->module, $this->source,
                     $this->importer->get_import_id());
+                $log->create();
             } finally {
                 $rowindex++;
                 $this->source->next(); // This can lead to an exception here.
@@ -135,6 +140,39 @@ class importer {
         return $haserrors;
     }
 
+    /**
+     * Validate the rows
+     *
+     * @throws \dml_transaction_exception if stansaction active
+     */
+    public function validate() {
+        $haserrors = false;
+        $rowindex = 0;
+        while ($this->source->valid()) {
+            try {
+                $row = $this->source->current();
+                $this->importer->fix_before_transform($row, $rowindex);
+                $transformedrow = $this->transformer->transform($row);
+                $this->importer->validate($transformedrow, $rowindex);
+            } catch (validation_exception $e) {
+                $haserrors = true;
+                $log = validation_log::from_importer_exception($e, $this->source);
+                $log->create();
+            } finally {
+                $rowindex++;
+                $this->source->next(); // This can lead to an exception here.
+            }
+        }
+        return $haserrors;
+    }
+
+    /**
+     * Update progressbar
+     *
+     * @param int $rowindex
+     * @param int $rowcount
+     * @throws \coding_exception
+     */
     protected function update_progress_bar($rowindex, $rowcount) {
         if ($this->progressbar) {
             if ($this->progressbar instanceof progress_bar) {
@@ -167,11 +205,18 @@ class importer {
         return $this->rowimported;
     }
 
+    /**
+     * Set related module
+     *
+     * @param string $modulename
+     */
     public function set_module($modulename = 'tool_importer') {
         $this->module = $modulename;
     }
 
     /**
+     * Get the related data importer
+     *
      * @return data_importer
      */
     public function get_data_importer() {

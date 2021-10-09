@@ -14,8 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_importer\task;
 /**
- * Adhoc task to import a cours
+ * Adhoc task to import a course
  *
  * As this can be a long process, this is better to use an adhoc task
  *
@@ -23,19 +24,14 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_importer\task;
-/**
- * Class course_restore_task
- *
- * @package tool_importer\task
- */
 class course_restore_task extends \core\task\adhoc_task {
+    /**
+     * Execute task
+     */
     public function execute() {
         global $CFG;
         $coursedata = $this->get_custom_data();
         require_once($CFG->dirroot . '/course/externallib.php');
         \core_course_external::import_course($coursedata->templatecourseid, $coursedata->courseid);
-
     }
 }

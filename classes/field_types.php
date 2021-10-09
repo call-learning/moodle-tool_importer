@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_importer;
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Plugin version and other meta-data are defined here.
  *
@@ -21,11 +24,14 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace tool_importer;
-defined('MOODLE_INTERNAL') || die();
-
 class field_types  {
+    /**
+     * Type INT / Numeric
+     */
     const TYPE_INT = 1;
+    /**
+     * Type Text
+     */
     const TYPE_TEXT = 3;
 
     /**

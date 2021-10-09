@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_importer\local;
+
+use core_text;
+
 /**
  * Local utils function for import routines and other.
  *
@@ -21,18 +25,12 @@
  * @copyright   2020 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace tool_importer\local;
-
-use core_text;
-
 class utils {
     /**
      * Remove accentuated character from a given string
      *
      * @param string $input
      * @return string
-     * @throws \moodle_exception
      */
     public static function translate_ascii($input) {
         return core_text::convert($input, 'utf-8', 'ascii');
@@ -40,11 +38,10 @@ class utils {
 
     /**
      * Compare two strings without space, on a lower case basis and without accentuated chars
-     */
-    /**
+     *
      * @param string $s1 first string
      * @param string $s2 second string
-     * @return int|\lt  <0 if $s1 < $s2, >0 if $s1 > $s2 and 0 if $s1 = $s2
+     * @return int  <0 if $s1 < $s2, >0 if $s1 > $s2 and 0 if $s1 = $s2
      */
     public static function compare_ws_accents($s1, $s2) {
         $s1 = str_replace(' ', '', static::translate_ascii($s1));
@@ -52,4 +49,3 @@ class utils {
         return strcasecmp($s1, $s2);
     }
 }
-

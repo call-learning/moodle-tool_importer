@@ -38,18 +38,24 @@ defined('MOODLE_INTERNAL') || die();
  */
 class course_dataimporter_test extends advanced_testcase {
 
+    /**
+     * Sample CSV definition
+     */
     const CSV_DEFINITION = array(
         "CodeProduit" => field_types::TYPE_TEXT,
         "IntituleProduit" => field_types::TYPE_TEXT,
         "ResumeProduit" => field_types::TYPE_TEXT
     );
 
+    /**
+     * @var \tool_importer\local\source\csv_data_source $csvimporter current importer
+     */
     protected $csvimporter = null;
 
     /**
      * Setup
      */
-    public function setUp() {
+    public function setUp(): void {
         global $CFG;
         parent::setUp();
         $this->resetAfterTest();
@@ -60,7 +66,6 @@ class course_dataimporter_test extends advanced_testcase {
         // Create a couple of custom fields definitions.
         $catid = $generator->create_custom_field_category([])->get('id');
         $generator->create_custom_field(['categoryid' => $catid, 'type' => 'text', 'shortname' => 'f1']);
-        // @codingStandardsIgnoreStart
         // phpcs:disable
         $this->csvimporter = new class(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv')
@@ -70,12 +75,8 @@ class course_dataimporter_test extends advanced_testcase {
             }
         };
         // phpcs:enable
-        // @codingStandardsIgnoreEnd
     }
 
-    /**
-     * @throws dml_exception
-     */
     public function test_simple_course_import() {
         global $DB;
         $csvimporter = $this->csvimporter;
@@ -102,9 +103,6 @@ class course_dataimporter_test extends advanced_testcase {
         $this->assertTrue($importer->get_data_importer()->get_import_id() === 50);
     }
 
-    /**
-     * @throws dml_exception
-     */
     public function test_simple_course_with_template_import() {
         global $CFG, $DB;
         $csvimporter = $this->csvimporter;
@@ -137,7 +135,7 @@ class course_dataimporter_test extends advanced_testcase {
      * @throws dml_exception
      */
     public function test_simple_course_with_customfields() {
-        global $CFG, $DB;
+        global $DB;
         $csvimporter = $this->csvimporter;
         $transformdef = array(
             'CodeProduit' => array(array('to' => 'idnumber'), array('to' => 'cf_f1')),
