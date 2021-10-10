@@ -141,13 +141,17 @@ class importer {
     }
 
     /**
-     * Validate the rows
+     * Validate the rows.
+     *
+     * The validation log is purged before we start the validation process
+     * TODO: deal with concurrency.
      *
      * @throws \dml_transaction_exception if stansaction active
      */
     public function validate() {
         $haserrors = false;
         $rowindex = 0;
+        $this->purge_validation_log();
         while ($this->source->valid()) {
             try {
                 $row = $this->source->current();
@@ -164,6 +168,26 @@ class importer {
             }
         }
         return $haserrors;
+    }
+
+    /**
+     * Purge validation log.
+     *
+     * Called automatically when we validate an import
+     * @throws \dml_exception
+     */
+    public function purge_validation_log() {
+        global $DB;
+        $DB->delete_records(validation_log::TABLE);
+    }
+
+    /**
+     * Get validation errors
+     *
+     * @return validation_log[]
+     */
+    public function get_validation_errors() {
+        return validation_log::get_records();
     }
 
     /**

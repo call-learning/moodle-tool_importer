@@ -274,7 +274,7 @@ class basic_tools_test extends advanced_testcase {
         $this->assertEquals($errors,
             array_map(function($log) {
                 return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
-            }, \tool_importer\local\validation_log::get_records())
+            }, $importer->get_validation_errors())
         );
     }
 
