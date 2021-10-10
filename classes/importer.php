@@ -118,8 +118,8 @@ class importer {
             try {
                 $row = $this->source->current();
                 $this->importer->fix_before_transform($row, $rowindex);
+                $this->importer->validate($row, $rowindex);
                 $transformedrow = $this->transformer->transform($row);
-                $this->importer->validate($transformedrow, $rowindex);
                 $this->importer->import_row($transformedrow, $rowindex);
                 $this->rowimported++;
                 $this->update_progress_bar($this->rowimported, $rowcount);
@@ -156,11 +156,16 @@ class importer {
             try {
                 $row = $this->source->current();
                 $this->importer->fix_before_transform($row, $rowindex);
-                $transformedrow = $this->transformer->transform($row);
-                $this->importer->validate($transformedrow, $rowindex);
+                $this->importer->validate($row, $rowindex);
+                $this->transformer->transform($row); // Check if row can be transformed and do not raise an exception.
             } catch (validation_exception $e) {
                 $haserrors = true;
                 $log = validation_log::from_importer_exception($e, $this->source);
+                $log->create();
+            } catch (\Exception $e) {
+                $haserrors = true;
+                $log = validation_log::from_generic_exception($e, $rowindex, $this->module, $this->source,
+                    $this->importer->get_import_id());
                 $log->create();
             } finally {
                 $rowindex++;

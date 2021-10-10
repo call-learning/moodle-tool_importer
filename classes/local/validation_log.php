@@ -25,6 +25,7 @@
 namespace tool_importer\local;
 
 use core\persistent;
+use Exception;
 use stdClass;
 use tool_importer\data_source;
 use tool_importer\importer_exception;
@@ -127,6 +128,28 @@ class validation_log extends persistent {
      */
     public static function from_importer_exception(importer_exception $e, data_source $source) {
         $importloginfo = $e->get_importation_info();
+        $importloginfo->origin = $source->get_source_type() . ':' . $source->get_source_identifier();
+        return new validation_log(0, $importloginfo);
+    }
+
+    /**
+     * From generic exception
+     *
+     * @param Exception $e
+     * @param int $linenumber
+     * @param string $module
+     * @param data_source $source
+     * @param string $messagecode
+     * @param string $fieldname
+     * @param string $additionalinfo
+     * @return validation_log
+     */
+    public static function from_generic_exception(Exception $e, int $linenumber, string $module, data_source $source,
+        string $messagecode = 'exception', $fieldname = '', $additionalinfo = '') {
+        $importloginfo = (object) compact(
+            ['messagecode', 'module', 'linenumber', 'fieldname', 'messagecode', 'additionalinfo']
+        );
+        $importloginfo->level = log_levels::LEVEL_ERROR;
         $importloginfo->origin = $source->get_source_type() . ':' . $source->get_source_identifier();
         return new validation_log(0, $importloginfo);
     }
