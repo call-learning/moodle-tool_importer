@@ -44,7 +44,7 @@ class field_types  {
     public static function is_valid($value, $type) {
         switch($type) {
             case self::TYPE_INT:
-                return is_int($value);
+                return is_numeric($value);
             case self::TYPE_TEXT:
                 return is_string($value);
         }

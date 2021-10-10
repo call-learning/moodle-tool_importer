@@ -41,11 +41,18 @@ class course_dataimporter_test extends advanced_testcase {
     /**
      * Sample CSV definition
      */
-    const CSV_DEFINITION = array(
-        "CodeProduit" => field_types::TYPE_TEXT,
-        "IntituleProduit" => field_types::TYPE_TEXT,
-        "ResumeProduit" => field_types::TYPE_TEXT
-    );
+    const CSV_DEFINITION = [
+        "CodeProduit" => [
+            'type' => field_types::TYPE_TEXT,
+            'required' => true,
+        ],
+        "IntituleProduit" => [
+            'type' => field_types::TYPE_TEXT
+        ],
+        "ResumeProduit" => [
+            'type' => field_types::TYPE_TEXT
+        ]
+    ];
 
     /**
      * @var \tool_importer\local\source\csv_data_source $csvimporter current importer
@@ -89,7 +96,7 @@ class course_dataimporter_test extends advanced_testcase {
 
         $importer = new importer($csvimporter,
             $transformer,
-            new course_data_importer(),
+            new course_data_importer($csvimporter),
             null,
             50
         );
@@ -115,7 +122,7 @@ class course_dataimporter_test extends advanced_testcase {
 
         $importer = new importer($csvimporter,
             $transformer,
-            new course_data_importer(array('templatecourseidnumber' => 'templatecourse')));
+            new course_data_importer($csvimporter, array('templatecourseidnumber' => 'templatecourse')));
         $importer->import();
         $this->runAdhocTasks(); // Make sure the import task has run.
         $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
@@ -146,7 +153,7 @@ class course_dataimporter_test extends advanced_testcase {
 
         $importer = new importer($csvimporter,
             $transformer,
-            new course_data_importer());
+            new course_data_importer($csvimporter));
         $importer->import();
 
         $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));

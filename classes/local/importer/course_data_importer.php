@@ -16,9 +16,10 @@
 
 namespace tool_importer\local\importer;
 
+
 use tool_importer\data_importer;
+use tool_importer\data_source;
 use tool_importer\field_types;
-use tool_importer\importer_exception;
 use tool_importer\local\utils;
 use tool_importer\task\course_restore_task;
 
@@ -45,12 +46,14 @@ class course_data_importer extends data_importer {
     /**
      * data_importer constructor.
      *
+     * @param data_source $source
      * @param mixed $defaultvals additional default values
      * @param string $customfieldsprefix
      * @throws \dml_exception
      */
-    public function __construct($defaultvals = null, $customfieldsprefix = "cf_") {
+    public function __construct(data_source $source, $defaultvals = null, $customfieldsprefix = "cf_") {
         global $DB;
+        parent::__construct($source);
         $defaultcategory = $DB->get_field_select('course_categories', "MIN(id)", "parent=0");
         $this->defaultvalues = [
             'idnumber' => '',
@@ -78,23 +81,6 @@ class course_data_importer extends data_importer {
      */
     protected function raw_import($row, $rowindex) {
         global $DB;
-        foreach ($this->get_fields_definition() as $col => $value) {
-            if (empty($value['type'])) {
-                throw new importer_exception('importercolumndef', 'tool_importer', 'type');
-            }
-            $type = $value['type'];
-            $required = empty($value['required']) ? false : $value['required'];
-            if ($required && !isset($row[$col])) {
-                throw new importer_exception('rowvaluerequired', 'tool_importer',
-                    "{$col}:" . json_encode($row));
-            } else if (!isset($row[$col])) {
-                continue;
-            }
-            if (!field_types::is_valid($row[$col], $type)) {
-                throw new importer_exception('invalidrowvalue', 'tool_importer',
-                    "{$col}:" . json_encode($row));
-            }
-        }
         $existingcourse = !empty($row['idnumber']) && (
             $DB->record_exists('course', array('idnumber' => $row['idnumber'])));
         $course = null;
@@ -132,7 +118,7 @@ class course_data_importer extends data_importer {
                         $datafield->set($datafield->datafield(), $value);
                         $datafield->set('contextid', $context->id);
                         $datafield->save();
-                        $course->{'cf_'.$field->get('shortname')} = $value; // We augment the course object with customfields.
+                        $course->{'cf_' . $field->get('shortname')} = $value; // We augment the course object with customfields.
                     }
                 }
             }
@@ -141,61 +127,61 @@ class course_data_importer extends data_importer {
     }
 
     /**
-     * Get the field definition array
+     * Check if row is valid before transformation.
      *
-     * The associative array has at least a series of column names
-     * Types are derived from the field_types class
-     * 'fieldname' => [ 'type' => TYPE_XXX, ...]
      *
-     * @return array
+     * @param array $row
+     * @param int $rowindex
+     * @throws validation_exception
      */
-    public function get_fields_definition() {
-        return array(
-            'fullname' => array(
+    public function validate_after_transform($row, $rowindex) {
+        $transformedfields = [
+            'fullname' => [
                 'type' => field_types::TYPE_TEXT,
                 'required' => true
-            ),
-            'shortname' => array(
+            ],
+            'shortname' => [
                 'type' => field_types::TYPE_TEXT,
                 'required' => false
-            ),
-            'idnumber' => array(
+            ],
+            'idnumber' => [
                 'type' => field_types::TYPE_TEXT,
                 'required' => false
-            ),
-            'format' => array(
+            ],
+            'format' => [
                 'type' => field_types::TYPE_TEXT,
                 'required' => false
-            ),
-            'newsitems' => array(
+            ],
+            'newsitems' => [
                 'type' => field_types::TYPE_INT,
                 'required' => false
-            ),
-            'numsections' => array(
+            ],
+            'numsections' => [
                 'type' => field_types::TYPE_INT,
                 'required' => false
-            ),
-            'summary' => array(
+            ],
+            'summary' => [
                 'type' => field_types::TYPE_TEXT,
                 'required' => false
-            ),
-            'summaryformat' => array(
+            ],
+            'summaryformat' => [
                 'type' => field_types::TYPE_INT,
                 'required' => false
-            ),
-            'category' => array(
+            ],
+            'category' => [
                 'type' => field_types::TYPE_INT,
                 'required' => false
-            ),
-            'startdate' => array(
+            ],
+            'startdate' => [
                 'type' => field_types::TYPE_INT,
                 'required' => false
-            ),
-            'templatecourseidnumber' => array(
+            ],
+            'templatecourseidnumber' => [
                 'type' => field_types::TYPE_TEXT,
                 'required' => false
-            )
-        );
+            ]
+        ];
+        $this->validate_from_field_definition($transformedfields, $row, $rowindex);
     }
 
     /**

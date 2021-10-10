@@ -109,6 +109,65 @@ abstract class data_importer {
     abstract protected function raw_import($row, $rowindex);
 
     /**
+     * Check if row is valid before transformation.
+     *
+     * @param array $row
+     * @param int $rowindex
+     * @throws validation_exception
+     */
+    public function validate_before_transform($row, $rowindex) {
+        $this->validate_from_field_definition($this->get_fields_definition(), $row, $rowindex);
+    }
+
+    /**
+     * Generic method to validate field definition
+     *
+     * This can be used before (usually) or after field definition with a different definition array.
+     *
+     * @param array $fielddefinitionlist associative array of field definition the associative array has at least a series of
+     * column names that should be present in the row. Types are derived from the field_types class 'fieldname' =>
+     * [ 'type' => TYPE_XXX, ...]
+     * @param array $row
+     * @param int $rowindex
+     * @throws validation_exception
+     */
+    protected function validate_from_field_definition($fielddefinitionlist, $row, $rowindex) {
+        foreach ($fielddefinitionlist as $fieldname => $value) {
+            if (empty($value['type'])) {
+                throw new validation_exception('typenotspecified',
+                    $rowindex,
+                    $fieldname,
+                    $this->module,
+                    'coding error: type unspecified',
+                    log_levels::LEVEL_ERROR
+                );
+            }
+            $type = $value['type'];
+            $required = empty($value['required']) ? false : $value['required'];
+            if ($required && !isset($row[$fieldname])) {
+                throw new validation_exception('required',
+                    $rowindex,
+                    $fieldname,
+                    $this->module,
+                    null,
+                    log_levels::LEVEL_ERROR
+                );
+            } else if (!isset($row[$fieldname])) {
+                continue;
+            }
+            if (!field_types::is_valid($row[$fieldname], $type)) {
+                throw new validation_exception('wrongtype',
+                    $rowindex,
+                    $fieldname,
+                    $this->module,
+                    null,
+                    log_levels::LEVEL_ERROR
+                );
+            }
+        }
+    }
+
+    /**
      * Check if row is valid after transformation.
      *
      *
@@ -116,36 +175,7 @@ abstract class data_importer {
      * @param int $rowindex
      * @throws validation_exception
      */
-    public function validate($row, $rowindex) {
-        $allfields = $this->get_fields_definition();
-        foreach ($allfields as $fieldname => $fieldvalue) {
-            if (!isset($row[$fieldname])) {
-                if (!empty($fieldvalue['required'])) {
-                    throw new validation_exception('required',
-                        $rowindex,
-                        $fieldname,
-                        $this->module,
-                        null,
-                        log_levels::LEVEL_WARNING);
-                }
-            } else {
-                switch ($fieldvalue['type']) {
-                    case field_types::TYPE_TEXT:
-                        break;
-                    case field_types::TYPE_INT:
-                        if (!is_numeric($row[$fieldname])) {
-                            throw new validation_exception('wrongtype',
-                                $rowindex,
-                                $fieldname,
-                                $this->module,
-                                null,
-                                log_levels::LEVEL_WARNING
-                            );
-                        }
-                        break;
-                }
-            }
-        }
+    public function validate_after_transform($row, $rowindex) {
     }
 
     /**
@@ -176,23 +206,7 @@ abstract class data_importer {
      * @throws importer_exception
      */
     public function basic_validations($row) {
-        foreach ($this->get_fields_definition() as $col => $value) {
-            if (empty($value['type'])) {
-                throw new importer_exception('importercolumndef', 'tool_importer', 'type');
-            }
-            $type = $value['type'];
-            $required = empty($value['required']) ? false : $value['required'];
-            if ($required && !isset($row[$col])) {
-                throw new importer_exception('rowvaluerequired', 'tool_importer',
-                    "{$col}:" . json_encode($row));
-            } else if (!isset($row[$col])) {
-                continue;
-            }
-            if (!field_types::is_valid($row[$col], $type)) {
-                throw new importer_exception('invalidrowvalue', 'tool_importer',
-                    "{$col}:" . json_encode($row));
-            }
-        }
+
     }
 
     /**
