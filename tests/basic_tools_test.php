@@ -34,6 +34,9 @@ class basic_tools_test extends advanced_testcase {
     /**
      * Test basic importation process
      *
+     * @param array $datagrid input data
+     * @param array $columndef
+     * @param array $expected
      * @dataProvider basic_import_dataprovider
      */
     public function test_importer_basic($datagrid, $columndef, $expected) {
@@ -136,7 +139,7 @@ class basic_tools_test extends advanced_testcase {
                         'haserror' => true,
                         'importlogs' => [[
                             'linenumber' => 1,
-                            'messagecode' => 'exception',
+                            'messagecode' => 'wrongcolumnnumber',
                             'origin' => 'memory:test',
                         ]],
                         'result' => [
@@ -185,12 +188,11 @@ class basic_tools_test extends advanced_testcase {
      * @dataProvider basic_csv_dataprovider
      */
     public function test_importer_csv($filename, $results, $errors) {
-        global $CFG;
-
         $this->resetAfterTest();
         if (!empty($results['exception'])) {
             $this->expectException($results['exception']);
         }
+
         $importer = $this->create_importer_from_params($filename);
         $haserror = $importer->import();
         $this->assertEquals($results['haserror'], $haserror);
@@ -208,22 +210,28 @@ class basic_tools_test extends advanced_testcase {
      */
     public function basic_csv_dataprovider() {
         return [
-            'oksample' => [
+            'Importation Ok' => [
                 'filename' => 'csv_sample1.csv',
                 'results' => [
                     'haserror' => false,
                 ],
                 'errors' => []
             ],
-            'issue with encoding' => [
+            'Issue with encoding' => [
                 'filename' => 'csv_sample2_wrong_encoding.csv',
                 'results' => [
                     'haserror' => true,
-                    'exception' => \tool_importer\importer_exception::class
+                    'exception' => tool_importer\local\exceptions\importer_exception::class
                 ],
-                'errors' => []
+                'errors' => [
+                    [
+                        'messagecode' => 'wrongencoding',
+                        'linenumber' => '1',
+                        'fieldname' => ''
+                    ]
+                ]
             ],
-            'issue with coltype' => [
+            'Issue with coltype' => [
                 'filename' => 'csv_sample3_wrong_coltype.csv',
                 'results' => [
                     'haserror' => true,
@@ -231,25 +239,59 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'wrongtype',
-                        'linenumber' => '1',
+                        'linenumber' => '3',
                         'fieldname' => 'Colonne 1'
                     ]
                 ]
             ],
-            'issue with required column' => [
+            'Issue with required column' => [
                 'filename' => 'csv_sample4_colmissing.csv',
                 'results' => [
                     'haserror' => true,
-                    'exception' => \tool_importer\importer_exception::class
+                    'exception' => tool_importer\local\exceptions\importer_exception::class
                 ],
-                'errors' => []
+                'errors' => [
+                    [
+                        'messagecode' => 'columnmissing',
+                        'linenumber' => '1',
+                        'fieldname' => 'Colonne 2'
+                    ]
+                ]
             ],
-            'issue with specialchars' => [
+            'Issue with specialchars' => [
                 'filename' => 'csv_sample5_colwithspecialchars.csv',
                 'results' => [
                     'haserror' => false,
                 ],
                 'errors' => []
+            ],
+            'With additional column, no issue' => [
+                'filename' => 'csv_sample6_additional_cols.csv',
+                'results' => [
+                    'haserror' => false,
+                ],
+                'errors' => []
+            ],
+            'Issue with space' => [
+                'filename' => 'csv_sample7_withspace.csv',
+                'results' => [
+                    'haserror' => false,
+                ],
+                'errors' => []
+            ],
+            'Issue with filenotfound' => [
+                'filename' => 'randomname.csv',
+                'results' => [
+                    'haserror' => true,
+                    'exception' => tool_importer\local\exceptions\importer_exception::class
+                ],
+                'errors' => [
+                    [
+                        'messagecode' => 'cannotopencsvfile',
+                        'linenumber' => '1',
+                        'fieldname' => ''
+                    ]
+                ]
             ],
         ];
     }
@@ -264,17 +306,14 @@ class basic_tools_test extends advanced_testcase {
      */
     public function test_validate_basic($filename, $results, $errors) {
         $this->resetAfterTest();
-        if (!empty($results['exception'])) {
-            $this->expectException($results['exception']);
-        }
         $importer = $this->create_importer_from_params($filename);
         $haserror = $importer->validate();
-        $this->assertEmpty(\tool_importer\local\import_log::get_records());
+        $this->assertEmpty(\tool_importer\local\import_log::get_records(['validationstep' => 0]));
         $this->assertEquals($results['haserror'], $haserror);
         $this->assertEquals($errors,
             array_map(function($log) {
                 return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
-            }, $importer->get_validation_errors())
+            }, $importer->get_validation_log())
         );
     }
 

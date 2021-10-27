@@ -94,7 +94,6 @@ class importer {
         $importlogclass = null
     ) {
         $this->source = $source;
-        $this->source->rewind();
         if ($importid != null) {
             $transformer->set_import_id($importid);
             $importer->set_import_id($importid);
@@ -110,34 +109,8 @@ class importer {
      * Import the whole set of entities
      */
     public function import() {
-        $rowcount = $this->source->get_total_row_count();
-        $this->rowimported = 0;
-        $haserrors = false;
-        $rowindex = 0;
-        while ($this->source->valid()) {
-            try {
-                $row = $this->source->current();
-                $this->importer->fix_before_transform($row, $rowindex);
-                $this->importer->validate_before_transform($row, $rowindex);
-                $transformedrow = $this->transformer->transform($row);
-                $this->importer->validate_after_transform($transformedrow, $rowindex);
-                $this->importer->import_row($transformedrow, $rowindex);
-                $this->rowimported++;
-                $this->update_progress_bar($this->rowimported, $rowcount);
-            } catch (validation_exception $e) {
-                $haserrors = true;
-                $log = import_log::from_importer_exception($e, $this->source, $this->importer->get_import_id());
-                $log->create();
-            } catch (\Exception $e) {
-                $haserrors = true;
-                $log = import_log::from_generic_exception($e, $rowindex, $this->module, $this->source,
-                    $this->importer->get_import_id());
-                $log->create();
-            } finally {
-                $rowindex++;
-                $this->source->next(); // This can lead to an exception here.
-            }
-        }
+        $this->importer->set_import_mode();
+        $haserrors = $this->do_import();
         return $haserrors;
     }
 
@@ -150,9 +123,36 @@ class importer {
      * @throws \dml_transaction_exception if stansaction active
      */
     public function validate() {
+        $this->purge_validation_log();
+        $this->importer->set_validation_mode();
+        try {
+            $haserrors = $this->do_import();
+            $this->source->rewind();
+        } catch (\moodle_exception $e) {
+            $log = import_log::from_exception($e, [
+                'linenumber' => 0,
+                'module' => $this->module,
+                'origin' => $this->source->get_origin(),
+                'importid' => $this->importer->get_import_id()
+            ]);
+            $log->set('validationstep', !$this->importer->is_import_mode());
+            $log->create();
+            $haserrors = true;
+        }
+
+        return $haserrors;
+    }
+
+    /**
+     * Import the whole set of entities or just validate, depending on the mode we are in.
+     */
+    protected function do_import() {
+        $this->reset_row_imported();
         $haserrors = false;
         $rowindex = 0;
-        $this->purge_validation_log();
+        $this->source->init_and_check();
+        $this->source->rewind();
+        $this->importer->init();
         while ($this->source->valid()) {
             try {
                 $row = $this->source->current();
@@ -160,14 +160,18 @@ class importer {
                 $this->importer->validate_before_transform($row, $rowindex);
                 $transformedrow = $this->transformer->transform($row);
                 $this->importer->validate_after_transform($transformedrow, $rowindex);
-            } catch (validation_exception $e) {
+                $this->importer->import_row($transformedrow, $rowindex);
+                $this->increment_row_imported();
+                $this->update_progress_bar($this->rowimported);
+            } catch (\moodle_exception $e) {
                 $haserrors = true;
-                $log = validation_log::from_importer_exception($e, $this->source);
-                $log->create();
-            } catch (\Exception $e) {
-                $haserrors = true;
-                $log = validation_log::from_generic_exception($e, $rowindex, $this->module, $this->source,
-                    $this->importer->get_import_id());
+                $log = import_log::from_exception($e, [
+                    'linenumber' => $rowindex,
+                    'module' => $this->module,
+                    'origin' => $this->source->get_origin(),
+                    'importid' => $this->importer->get_import_id()
+                ]);
+                $log->set('validationstep', !$this->importer->is_import_mode());
                 $log->create();
             } finally {
                 $rowindex++;
@@ -181,31 +185,34 @@ class importer {
      * Purge validation log.
      *
      * Called automatically when we validate an import
+     *
      * @throws \dml_exception
      */
     public function purge_validation_log() {
-        global $DB;
-        $DB->delete_records(validation_log::TABLE);
+        $allvalidationlogs = import_log::get_records(['validationstep' => 1, 'importid' => $this->importer->get_import_id()]);
+        foreach ($allvalidationlogs as $log) {
+            $log->delete();
+        }
     }
 
     /**
      * Get validation errors
      *
-     * @return validation_log[]
+     * @return import_log[]
      */
-    public function get_validation_errors() {
-        return validation_log::get_records();
+    public function get_validation_log() {
+        return import_log::get_records(['validationstep' => 1, 'importid' => $this->importer->get_import_id()]);
     }
 
     /**
      * Update progressbar
      *
      * @param int $rowindex
-     * @param int $rowcount
      * @throws \coding_exception
      */
-    protected function update_progress_bar($rowindex, $rowcount) {
-        if ($this->progressbar) {
+    protected function update_progress_bar($rowindex) {
+        $rowcount = $this->source->get_total_row_count();
+        if ($this->progressbar && $this->importer->is_import_mode()) {
             if ($this->progressbar instanceof progress_bar) {
                 $this->progressbar->update(
                     $rowindex,
@@ -234,6 +241,28 @@ class importer {
      */
     public function get_row_imported_count() {
         return $this->rowimported;
+    }
+
+    /**
+     * Get total rows
+     *
+     * @return mixed
+     */
+    protected function increment_row_imported() {
+        if ($this->importer->is_import_mode()) {
+            $this->rowimported++;
+        }
+    }
+
+    /**
+     * Get total rows
+     *
+     * @return mixed
+     */
+    protected function reset_row_imported() {
+        if ($this->importer->is_import_mode()) {
+            $this->rowimported = 0;
+        }
     }
 
     /**

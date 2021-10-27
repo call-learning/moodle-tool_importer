@@ -17,6 +17,7 @@
 namespace tool_importer\local;
 
 use core_text;
+use tool_importer\data_source;
 
 /**
  * Local utils function for import routines and other.

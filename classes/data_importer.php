@@ -16,6 +16,8 @@
 
 namespace tool_importer;
 
+use tool_importer\local\exceptions\importer_exception;
+use tool_importer\local\exceptions\validation_exception;
 use tool_importer\local\log_levels;
 
 defined('MOODLE_INTERNAL') || die();
@@ -54,12 +56,27 @@ abstract class data_importer {
     protected $module = 'tool_importer';
 
     /**
+     * Current validation mode: false => do the real import, true => just validate
+     * @var bool
+     */
+    protected $validationmode = false;
+
+    /**
      * data_importer constructor.
      *
      * @param data_source $source
      */
     public function __construct(data_source $source) {
         $this->source = $source;
+    }
+
+    /**
+     * Called just before importation or validation.
+     *
+     * Gives a chance to reinit values or local information before a real import.
+     */
+    public function init() {
+        // Nothing for now but will be overriden accordingly.
     }
 
     /**
@@ -83,8 +100,10 @@ abstract class data_importer {
      * @return mixed
      */
     public function import_row($row, $rowindex) {
-        $data = $this->raw_import($row, $rowindex);
-        $this->after_row_imported($row, $data, $rowindex);
+        if ($this->is_import_mode()) {
+            $data = $this->raw_import($row, $rowindex);
+            $this->after_row_imported($row, $data, $rowindex);
+        }
     }
 
     /**
@@ -149,7 +168,7 @@ abstract class data_importer {
                     $rowindex,
                     $fieldname,
                     $this->module,
-                    null,
+                    '',
                     log_levels::LEVEL_ERROR
                 );
             } else if (!isset($row[$fieldname])) {
@@ -160,7 +179,7 @@ abstract class data_importer {
                     $rowindex,
                     $fieldname,
                     $this->module,
-                    null,
+                    '',
                     log_levels::LEVEL_ERROR
                 );
             }
@@ -233,4 +252,25 @@ abstract class data_importer {
     public function set_import_id($importid) {
         $this->importexternalid = $importid;
     }
+
+    /**
+     * Set the importer in validation mode only. No import will be done.
+     */
+    public function set_validation_mode() {
+        $this->validationmode = true;
+    }
+    /**
+     * Set the importer in import mode. Real import will be done.
+     */
+    public function set_import_mode() {
+        $this->validationmode = false;
+    }
+
+    /**
+     * Is this importer in import or validation mode
+     */
+    public function is_import_mode() {
+        return !$this->validationmode;
+    }
+
 }

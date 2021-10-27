@@ -51,3 +51,7 @@ jobs:
       - name: savepoints
         if: ${{ always() }}
         run: moodle-plugin-ci savepoints plugin
+
+      - name: phpcpd
+        if: ${{ always() }}
+        run: moodle-plugin-ci phpdoc plugin || true

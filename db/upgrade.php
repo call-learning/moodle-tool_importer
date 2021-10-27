@@ -69,34 +69,17 @@ function xmldb_tool_importer_upgrade($oldversion) {
         // Importer savepoint reached.
         upgrade_plugin_savepoint(true, 2021310300, 'tool', 'importer');
     }
-    if ($oldversion < 2021310302) {
-        // Define table tool_importer_validations to be created.
-        $table = new xmldb_table('tool_importer_validations');
+    if ($oldversion < 2022010100) {
+        // Define field validationstep to be added to tool_importer_logs.
+        $table = new xmldb_table('tool_importer_logs');
+        $field = new xmldb_field('validationstep', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'importid');
 
-        // Adding fields to table tool_importer_validations.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('linenumber', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table->add_field('messagecode', XMLDB_TYPE_CHAR, '254', null, null, null, null);
-        $table->add_field('module', XMLDB_TYPE_CHAR, '254', null, null, null, null);
-        $table->add_field('additionalinfo', XMLDB_TYPE_TEXT, null, null, null, null, null);
-        $table->add_field('fieldname', XMLDB_TYPE_CHAR, '254', null, null, null, null);
-        $table->add_field('level', XMLDB_TYPE_INTEGER, '4', null, null, null, null);
-        $table->add_field('origin', XMLDB_TYPE_CHAR, '1024', null, null, null, null);
-        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-
-        // Adding keys to table tool_importer_validations.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
-
-        // Conditionally launch create table for tool_importer_validations.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
+        // Conditionally launch add field validationstep.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
         }
-
         // Importer savepoint reached.
-        upgrade_plugin_savepoint(true, 2021310302, 'tool', 'importer');
+        upgrade_plugin_savepoint(true, 2022010100, 'tool', 'importer');
     }
     return true;
 }

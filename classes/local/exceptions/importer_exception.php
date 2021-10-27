@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_importer;
+namespace tool_importer\local\exceptions;
 
 use tool_importer\local\log_levels;
 
@@ -33,42 +33,42 @@ defined('MOODLE_INTERNAL') || die();
  */
 class importer_exception extends \moodle_exception {
     /**
-     * @var object $exceptioninfo information about the validation issue
+     * @var int $level information about the validation issue
      */
-    private $exceptioninfo = null;
+    public $level = log_levels::LEVEL_WARNING;
+
+    /**
+     * @var string $fieldname information
+     */
+    public $fieldname = "";
+
+    /**
+     * @var int $linenumber information
+     */
+    public $linenumber = 0;
 
     /**
      * Create a validation exception
      *
      * @param string $messagecode
-     * @param int $linenumber
+     * @param int $rowindex
      * @param string $fieldname
      * @param string $module
      * @param null $additionalinfo
      * @param int $level
      * @param null $debuginfo
      */
-    public function __construct($messagecode, $linenumber, $fieldname, $module = 'local_import', $additionalinfo = null,
-        $level = log_levels::LEVEL_WARNING, $debuginfo = null) {
-        $this->exceptioninfo = (object)
-        compact(
-            'messagecode',
-            'linenumber',
-            'fieldname',
-            'module',
-            'additionalinfo',
-            'level',
-            'additionalinfo'
-        );
+    public function __construct($messagecode,
+        $rowindex,
+        $fieldname = '',
+        $module = 'tool_importer',
+        $additionalinfo = null,
+        $level = log_levels::LEVEL_WARNING,
+        $debuginfo = null) {
+        $this->linenumber = $rowindex + 2; // We take into account the header and the fact we start at index 0, although this
+        // make more sense to start row index at 1.
+        $this->level = $level;
+        $this->fieldname = $fieldname;
         parent::__construct($messagecode, $module, '', $additionalinfo, $debuginfo);
-    }
-
-    /**
-     * Get all available about importation status (rowindex, ...)
-     *
-     * @return object
-     */
-    public function get_importation_info() {
-        return $this->exceptioninfo;
     }
 }

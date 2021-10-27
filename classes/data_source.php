@@ -29,6 +29,7 @@ namespace tool_importer;
 defined('MOODLE_INTERNAL') || die();
 
 use Iterator;
+use tool_importer\local\exceptions\importer_exception;
 
 /**
  * Class data_source
@@ -51,6 +52,17 @@ abstract class data_source implements Iterator {
      * @var array $currentvalue
      */
     protected $currentvalue = null;
+
+    /**
+     * Initialise the csv datasource.
+     *
+     * This will initialise the current source. This has to be called before we call current or rewind.
+     *
+     * @throws importer_exception
+     */
+    public function init_and_check() {
+        // Nothing for now.
+    }
 
     /**
      * Get the field definition array.
@@ -84,6 +96,15 @@ abstract class data_source implements Iterator {
      * @return string|null
      */
     abstract public function get_source_identifier();
+
+    /**
+     * Get origin
+     *
+     * @return string
+     */
+    public function get_origin() {
+        return $this->get_source_type() . ':' . $this->get_source_identifier();
+    }
 
     /**
      * Get next element and protect it from throwing an exc

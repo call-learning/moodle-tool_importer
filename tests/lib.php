@@ -66,11 +66,23 @@ class inmemory_data_source extends data_source {
     public $fielddefinition = [];
     protected $currentrow = 0;
 
+    /**
+     * Constructor
+     *
+     * @param null $dataarray
+     * @param null $fielddefinition
+     */
     public function __construct($dataarray = null, $fielddefinition = null) {
         $this->dataarray = $dataarray ?? self::BASIC_DATA_ARRAY;
         $this->fielddefinition = $fielddefinition ?? self::BASIC_FIELD_DEFINITION;
     }
 
+    /**
+     * Current value
+     *
+     * @return array|false|mixed
+     * @throws moodle_exception
+     */
     public function current() {
         $keys = array_keys($this->get_fields_definition());
         if (count($this->dataarray[$this->currentrow]) != count($keys)) {
@@ -79,6 +91,12 @@ class inmemory_data_source extends data_source {
         return array_combine($keys, $this->dataarray[$this->currentrow]);
     }
 
+    /**
+     * Get next value
+     *
+     * @return array|false|mixed
+     * @throws moodle_exception
+     */
     public function retrieve_next_value() {
         $this->currentrow++;
         if ($this->currentrow < count($this->dataarray)) {
@@ -88,30 +106,61 @@ class inmemory_data_source extends data_source {
         }
     }
 
+    /**
+     * Get current key
+     *
+     * @return bool|float|int|string|null
+     */
     public function key() {
         return $this->currentrow;
     }
 
+    /**
+     * Is valid
+     *
+     * @return bool
+     */
     public function valid() {
         return $this->currentrow < count($this->dataarray);
     }
 
+    /**
+     * Do rewind
+     */
     public function rewind() {
         $this->currentrow = 0;
     }
 
+    /**
+     * Get header definition
+     *
+     * @return array|array[]
+     */
     public function get_fields_definition() {
         return $this->fielddefinition;
     }
 
+    /**
+     * Get total row count
+     *
+     * @return int
+     */
     public function get_total_row_count() {
         return 3;
     }
 
+    /**
+     * Get source type
+     */
     public function get_source_type() {
         return 'memory';
     }
 
+    /**
+     * Get source identifier
+     *
+     * @return string
+     */
     public function get_source_identifier() {
         return 'test';
     }

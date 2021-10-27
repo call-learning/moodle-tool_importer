@@ -14,11 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_importer;
-
-use tool_importer\local\import_log;
-use tool_importer\local\log_levels;
-use tool_importer\local\validation_log;
+namespace tool_importer\local\exceptions;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -30,5 +26,5 @@ defined('MOODLE_INTERNAL') || die();
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class validation_exception extends importer_exception {
-
+    // Just typing the exception.
 }

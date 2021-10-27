@@ -17,10 +17,7 @@
 namespace tool_importer\local;
 
 use core\persistent;
-use Exception;
 use stdClass;
-use tool_importer\data_source;
-use tool_importer\importer_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -77,6 +74,8 @@ class import_log extends persistent {
             ),
             'fieldname' => array(
                 'type' => PARAM_TEXT,
+                'default' => '',
+                'null' => NULL_ALLOWED
             ),
             'level' => array(
                 'type' => PARAM_INT,
@@ -100,6 +99,11 @@ class import_log extends persistent {
             'importid' => array(
                 'type' => PARAM_INT,
             ),
+            'validationstep' => array(
+                'type' => PARAM_BOOL,
+                'default' => false,
+                'null' => NULL_ALLOWED
+            ),
         );
     }
 
@@ -117,41 +121,22 @@ class import_log extends persistent {
     }
 
     /**
-     * From an importer exception
-     *
-     * @param importer_exception $e
-     * @param data_source $source
-     * @param int $importid
-     * @return import_log
-     */
-    public static function from_importer_exception(importer_exception $e, data_source $source, int $importid) {
-        $importloginfo = $e->get_importation_info();
-        $importloginfo->origin = $source->get_source_type() . ':' . $source->get_source_identifier();
-        $importloginfo->importid = $importid;
-        return new import_log(0, $importloginfo);
-    }
-
-    /**
      * From generic exception
      *
-     * @param Exception $e
-     * @param int $linenumber
-     * @param string $module
-     * @param data_source $source
-     * @param int $importid
-     * @param string $messagecode
-     * @param string $fieldname
-     * @param string $additionalinfo
+     * @param \moodle_exception $e
+     * @param array $overrides contains at least the values for importid, level and module
      * @return import_log
      */
-    public static function from_generic_exception(Exception $e, int $linenumber, string $module, data_source $source,
-        int $importid, string $messagecode = 'exception', $fieldname = '', $additionalinfo = '') {
-        $importloginfo = (object) compact(
-            ['messagecode', 'module', 'linenumber', 'fieldname', 'messagecode', 'additionalinfo']
-        );
-        $importloginfo->level = log_levels::LEVEL_ERROR;
-        $importloginfo->origin = $source->get_source_type() . ':' . $source->get_source_identifier();
-        $importloginfo->importid = $importid;
+    public static function from_exception(\moodle_exception $e, array $overrides) {
+        $importloginfo = new stdClass();
+        $importloginfo->messagecode = $e->errorcode;
+        $importloginfo->origin = $overrides['origin'] ?? 'unknown';
+        $importloginfo->module = $e->module ?? ($overrides['module'] ?? 'tool_importer');
+        $importloginfo->level = $e->level ?? ($overrides['level'] ?? log_levels::LEVEL_ERROR);
+        $importloginfo->linenumber = $e->linenumber ?? ($overrides['linenumber'] ?? 0);
+        $importloginfo->fieldname = $e->fieldname ?? '';
+        $importloginfo->importid = $overrides['importid'];
+        $importloginfo->additionalinfo = $e->a ?? '';
         return new import_log(0, $importloginfo);
     }
 }
