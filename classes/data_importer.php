@@ -30,23 +30,15 @@ defined('MOODLE_INTERNAL') || die();
  * This class will be derived according to the type of data to be imported.
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class data_importer {
-    /**
-     * @var int $importexternalid
-     */
-    protected $importexternalid = 0;
+abstract class data_importer implements data_processor_interface {
+    use data_processor_impl;
     /**
      * @var array
      */
     protected $defaultvalues = [];
-
-    /**
-     * @var data_source $source
-     */
-    protected $source = null;
 
     /**
      * Current module
@@ -60,16 +52,14 @@ abstract class data_importer {
      * @var bool
      */
     protected $validationmode = false;
-
     /**
      * data_importer constructor.
      *
-     * @param data_source $source
+     * @param array $defaultvals additional default values
      */
-    public function __construct(data_source $source) {
-        $this->source = $source;
+    public function __construct($defaultvals = []) {
+        $this->defaultvalues = $defaultvals;
     }
-
     /**
      * Called just before importation or validation.
      *
@@ -89,7 +79,7 @@ abstract class data_importer {
      * @return array
      */
     public function get_fields_definition() {
-        return $this->source->get_fields_definition();
+        return $this->get_source()->get_fields_definition();
     }
 
     /**
@@ -226,31 +216,6 @@ abstract class data_importer {
      */
     public function basic_validations($row) {
 
-    }
-
-    /**
-     * Get related data source
-     */
-    public function get_related_source() {
-        return $this->source;
-    }
-
-    /**
-     * Get import id
-     *
-     * @return int
-     */
-    public function get_import_id() {
-        return $this->importexternalid;
-    }
-
-    /**
-     * Set import id
-     *
-     * @param int $importid
-     */
-    public function set_import_id($importid) {
-        $this->importexternalid = $importid;
     }
 
     /**

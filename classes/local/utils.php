@@ -23,7 +23,7 @@ use tool_importer\data_source;
  * Local utils function for import routines and other.
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class utils {

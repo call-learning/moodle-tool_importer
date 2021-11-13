@@ -36,17 +36,23 @@ defined('MOODLE_INTERNAL') || die();
  * An in memory datasource for tests
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class inmemory_data_source extends data_source {
 
+    /**
+     * Basic data array as CSV replacement
+     */
     const BASIC_DATA_ARRAY = [
         ['A', 'B', 'C', 'D'],
         ['E', 'F', 'G', 'H'],
         ['I', 'J', 'K', 'L'],
     ];
 
+    /**
+     * Basic Field definition
+     */
     const BASIC_FIELD_DEFINITION = [
         'col1' => [
             'type' => \tool_importer\field_types::TYPE_TEXT,
@@ -62,8 +68,17 @@ class inmemory_data_source extends data_source {
         ]
     ];
 
+    /**
+     * Data array
+     */
     public $dataarray = [];
+    /**
+     * Field def
+     */
     public $fielddefinition = [];
+    /**
+     * Current row
+     */
     protected $currentrow = 0;
 
     /**
@@ -172,7 +187,7 @@ class inmemory_data_source extends data_source {
  * A minimal data transformer for test
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class minimal_transformer extends data_transformer {
@@ -197,7 +212,7 @@ class minimal_transformer extends data_transformer {
  * A minimal data transformer for test
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class inmemory_importer extends data_importer {

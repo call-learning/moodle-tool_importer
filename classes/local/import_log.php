@@ -25,7 +25,7 @@ defined('MOODLE_INTERNAL') || die();
  * Class import_log
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class import_log extends persistent {
@@ -46,6 +46,27 @@ class import_log extends persistent {
             $record->level = log_levels::convert_level_name_to_level_number($record->type) ?? log_levels::LEVEL_INFO;
         }
         parent::__construct($id, $record);
+        if (!is_null(json_decode($record->additionalinfo))) {
+            $record->additionalinfo = json_decode($record->additionalinfo);
+        }
+    }
+
+    /**
+     * Add more info to the log (and encode it if to be stored in db)
+     *
+     * @param $value
+     */
+    protected function set_additionalinfo($value) {
+        $this->data['additionalinfo'] = is_string($value) ? $value : json_encode($value);
+    }
+
+    /**
+     * Get additional info and decode it from the db
+     * @return mixed
+     */
+    protected function get_additionalinfo() {
+        $json = json_decode($this->data['additionalinfo']);
+        return $json ?? $this->data['additionalinfo'];
     }
 
     /**
@@ -137,6 +158,9 @@ class import_log extends persistent {
         $importloginfo->fieldname = $e->fieldname ?? '';
         $importloginfo->importid = $overrides['importid'];
         $importloginfo->additionalinfo = $e->a ?? '';
+        if (!is_string($importloginfo->additionalinfo)) {
+            $importloginfo->additionalinfo = json_encode($importloginfo->additionalinfo);
+        }
         return new import_log(0, $importloginfo);
     }
 }

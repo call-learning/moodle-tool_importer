@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use tool_importer\field_types;
-use tool_importer\importer;
+use tool_importer\processor;
 use tool_importer\local\transformer\standard;
 
 defined('MOODLE_INTERNAL') || die();
@@ -27,7 +27,7 @@ require_once($CFG->dirroot . '/admin/tool/importer/tests/lib.php');
  * Test for basic tools
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class basic_tools_test extends advanced_testcase {
@@ -43,9 +43,9 @@ class basic_tools_test extends advanced_testcase {
         $this->resetAfterTest();
         $source = new inmemory_data_source($datagrid);
         $inmemoryimporter = new inmemory_importer($source);
-        $importer = new importer($source, new minimal_transformer(), $inmemoryimporter);
-        $haserror = $importer->import();
-        $this->assertEquals($expected['haserror'], $haserror);
+        $importer = new processor($source, new minimal_transformer(), $inmemoryimporter);
+        $isvalid = $importer->import();
+        $this->assertEquals($expected['isvalid'], $isvalid);
         $this->assertEquals($expected['result'], $inmemoryimporter->resultarray);
         $this->assertEquals($expected['importlogs'],
             array_map(function($log) {
@@ -87,7 +87,7 @@ class basic_tools_test extends advanced_testcase {
                         ],
                     ],
                     'expected' => [
-                        'haserror' => false,
+                        'isvalid' => true,
                         'result' => [
                             [
                                 'col2' => 'B',
@@ -136,7 +136,7 @@ class basic_tools_test extends advanced_testcase {
                         ],
                     ],
                     'expected' => [
-                        'haserror' => true,
+                        'isvalid' => false,
                         'importlogs' => [[
                             'linenumber' => 1,
                             'messagecode' => 'wrongcolumnnumber',
@@ -194,12 +194,13 @@ class basic_tools_test extends advanced_testcase {
         }
 
         $importer = $this->create_importer_from_params($filename);
-        $haserror = $importer->import();
-        $this->assertEquals($results['haserror'], $haserror);
+        $isvalid = $importer->import();
+        $this->assertEquals($results['isvalid'], $isvalid, $filename);
         $this->assertEquals($errors,
             array_map(function($log) {
                 return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
-            }, \tool_importer\local\import_log::get_records())
+            }, \tool_importer\local\import_log::get_records()),
+            $filename
         );
     }
 
@@ -213,14 +214,14 @@ class basic_tools_test extends advanced_testcase {
             'Importation Ok' => [
                 'filename' => 'csv_sample1.csv',
                 'results' => [
-                    'haserror' => false,
+                    'isvalid' => true,
                 ],
                 'errors' => []
             ],
             'Issue with encoding' => [
                 'filename' => 'csv_sample2_wrong_encoding.csv',
                 'results' => [
-                    'haserror' => true,
+                    'isvalid' => false,
                     'exception' => tool_importer\local\exceptions\importer_exception::class
                 ],
                 'errors' => [
@@ -234,7 +235,7 @@ class basic_tools_test extends advanced_testcase {
             'Issue with coltype' => [
                 'filename' => 'csv_sample3_wrong_coltype.csv',
                 'results' => [
-                    'haserror' => true,
+                    'isvalid' => false,
                 ],
                 'errors' => [
                     [
@@ -247,7 +248,7 @@ class basic_tools_test extends advanced_testcase {
             'Issue with required column' => [
                 'filename' => 'csv_sample4_colmissing.csv',
                 'results' => [
-                    'haserror' => true,
+                    'isvalid' => false,
                     'exception' => tool_importer\local\exceptions\importer_exception::class
                 ],
                 'errors' => [
@@ -261,28 +262,28 @@ class basic_tools_test extends advanced_testcase {
             'Issue with specialchars' => [
                 'filename' => 'csv_sample5_colwithspecialchars.csv',
                 'results' => [
-                    'haserror' => false,
+                    'isvalid' => true,
                 ],
                 'errors' => []
             ],
             'With additional column, no issue' => [
                 'filename' => 'csv_sample6_additional_cols.csv',
                 'results' => [
-                    'haserror' => false,
+                    'isvalid' => true,
                 ],
                 'errors' => []
             ],
             'Issue with space' => [
                 'filename' => 'csv_sample7_withspace.csv',
                 'results' => [
-                    'haserror' => false,
+                    'isvalid' => true,
                 ],
                 'errors' => []
             ],
             'Issue with filenotfound' => [
                 'filename' => 'randomname.csv',
                 'results' => [
-                    'haserror' => true,
+                    'isvalid' => false,
                     'exception' => tool_importer\local\exceptions\importer_exception::class
                 ],
                 'errors' => [
@@ -302,18 +303,18 @@ class basic_tools_test extends advanced_testcase {
      * @param array $results
      * @param array $errors
      * @dataProvider basic_csv_dataprovider
-     * @throws dml_transaction_exception
      */
     public function test_validate_basic($filename, $results, $errors) {
         $this->resetAfterTest();
         $importer = $this->create_importer_from_params($filename);
-        $haserror = $importer->validate();
+        $isvalid = $importer->validate();
         $this->assertEmpty(\tool_importer\local\import_log::get_records(['validationstep' => 0]));
-        $this->assertEquals($results['haserror'], $haserror);
+        $this->assertEquals($results['isvalid'], $isvalid, $filename);
         $this->assertEquals($errors,
             array_map(function($log) {
                 return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
-            }, $importer->get_validation_log())
+            }, $importer->get_validation_log()),
+            $filename
         );
     }
 
@@ -321,7 +322,7 @@ class basic_tools_test extends advanced_testcase {
      * Create importer and csv importer in one go.
      *
      * @param $filename
-     * @return importer
+     * @return processor
      */
     protected function create_importer_from_params($filename) {
         global $CFG;
@@ -334,7 +335,7 @@ class basic_tools_test extends advanced_testcase {
         };
         $transformer = new standard([]);
 
-        $importer = new importer($csvimporter,
+        $importer = new processor($csvimporter,
             $transformer,
             new class($csvimporter) extends \tool_importer\data_importer {
                 protected $importedrows = [];

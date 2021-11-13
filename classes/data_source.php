@@ -21,7 +21,7 @@
  * Read data row by row
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -37,10 +37,11 @@ use tool_importer\local\exceptions\importer_exception;
  * This class is an iterator and can be used as such. Read data row by row.
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class data_source implements Iterator {
+abstract class data_source implements Iterator, data_processor_interface {
+    use data_processor_impl;
     /**
      * Iterator is valid
      *

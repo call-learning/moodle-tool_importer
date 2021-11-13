@@ -22,7 +22,7 @@
  * This class will be derived according to the type of data to be imported.
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -40,7 +40,7 @@ defined('MOODLE_INTERNAL') || die();
  * Class csv_data_source
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class csv_data_source extends data_source {
@@ -147,7 +147,8 @@ abstract class csv_data_source extends data_source {
                 -1,
                 '',
                 'tool_importer',
-                basename($this->csvfilepath) . " expected format is $this->encoding but encoding is " . mb_detect_encoding($content),
+                basename($this->csvfilepath) . " expected format is $this->encoding but encoding is " .
+                mb_detect_encoding($content),
                 log_levels::LEVEL_ERROR);
         }
         $this->rowcount = $this->csvimporter->load_csv_content($content, $this->encoding, $this->separator);

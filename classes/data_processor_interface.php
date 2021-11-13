@@ -14,24 +14,46 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_importer\task;
+namespace tool_importer;
+
+defined('MOODLE_INTERNAL') || die();
+
 /**
- * Adhoc task to import a course
+ * Data processor class.
  *
- * As this can be a long process, this is better to use an adhoc task
+ * Take a processed row and make it persistent
+ *
+ * This class will be derived according to the type of data to be imported.
  *
  * @package     tool_importer
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_restore_task extends \core\task\adhoc_task {
+interface data_processor_interface {
     /**
-     * Execute task
+     * Set importer
      */
-    public function execute() {
-        global $CFG;
-        $coursedata = $this->get_custom_data();
-        require_once($CFG->dirroot . '/course/externallib.php');
-        \core_course_external::import_course($coursedata->templatecourseid, $coursedata->courseid);
-    }
+    public function set_processor(processor $importer);
+
+    /**
+     * Get import identifier helper
+     *
+     * @return int
+     */
+    public function get_import_id();
+
+    /**
+     * Get related data source
+     */
+    public function get_source();
+
+    /**
+     * Get related data transformer
+     */
+    public function get_transformer();
+
+    /**
+     * Get related data importer
+     */
+    public function get_importer();
 }

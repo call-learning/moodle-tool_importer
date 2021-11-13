@@ -18,12 +18,12 @@
  * Course data importer test
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 use tool_importer\field_types;
-use tool_importer\importer;
+use tool_importer\processor;
 use tool_importer\local\importer\course_data_importer;
 use tool_importer\local\transformer\standard;
 
@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * Tests the import process with a simple case
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_dataimporter_test extends advanced_testcase {
@@ -94,9 +94,9 @@ class course_dataimporter_test extends advanced_testcase {
         );
         $transformer = new standard($transformdef);
 
-        $importer = new importer($csvimporter,
+        $importer = new processor($csvimporter,
             $transformer,
-            new course_data_importer($csvimporter),
+            new course_data_importer(),
             null,
             50
         );
@@ -107,7 +107,7 @@ class course_dataimporter_test extends advanced_testcase {
         $this->assertNotEmpty($arthrocourse);
         $this->assertNotEmpty($brachycourse);
         $this->assertNotEmpty($coudecourse);
-        $this->assertTrue($importer->get_data_importer()->get_import_id() === 50);
+        $this->assertTrue($importer->get_import_id() === 50);
     }
 
     public function test_simple_course_with_template_import() {
@@ -120,11 +120,11 @@ class course_dataimporter_test extends advanced_testcase {
         );
         $transformer = new standard($transformdef);
 
-        $importer = new importer($csvimporter,
+        $importer = new processor($csvimporter,
             $transformer,
-            new course_data_importer($csvimporter, array('templatecourseidnumber' => 'templatecourse')));
+            new course_data_importer(array('templatecourseidnumber' => 'templatecourse')));
         $importer->import();
-        $this->runAdhocTasks(); // Make sure the import task has run.
+        $this->runAdhocTasks(\tool_importer\task\course_restore_task::class); // Make sure the import task has run.
         $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
         $brachycourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-BRACHY'));
         $coudecourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-COUDE'));
@@ -151,9 +151,9 @@ class course_dataimporter_test extends advanced_testcase {
         );
         $transformer = new standard($transformdef);
 
-        $importer = new importer($csvimporter,
+        $importer = new processor($csvimporter,
             $transformer,
-            new course_data_importer($csvimporter));
+            new course_data_importer());
         $importer->import();
 
         $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));

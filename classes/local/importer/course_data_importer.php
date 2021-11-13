@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * This class will be derived according to the type of data to be imported.
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_data_importer extends data_importer {
@@ -46,14 +46,12 @@ class course_data_importer extends data_importer {
     /**
      * data_importer constructor.
      *
-     * @param data_source $source
      * @param mixed $defaultvals additional default values
      * @param string $customfieldsprefix
      * @throws \dml_exception
      */
-    public function __construct(data_source $source, $defaultvals = null, $customfieldsprefix = "cf_") {
+    public function __construct($defaultvals = null, $customfieldsprefix = "cf_") {
         global $DB;
-        parent::__construct($source);
         $defaultcategory = $DB->get_field_select('course_categories', "MIN(id)", "parent=0");
         $this->defaultvalues = [
             'idnumber' => '',

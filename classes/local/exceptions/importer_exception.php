@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
  * This class will be derived according to the type of data to be imported.
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class importer_exception extends \moodle_exception {

@@ -18,10 +18,10 @@
  * Data processor class.
  *
  *
- * Transfor a give row of data
+ * Transform a give row of data
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -36,12 +36,8 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @package tool_importer
  */
-abstract class data_transformer {
-    /**
-     * @var int $importexternalid
-     */
-    private $importexternalid = 0;
-
+abstract class data_transformer  implements data_processor_interface {
+    use data_processor_impl;
     /**
      * @var array transformation definition
      */
@@ -94,22 +90,4 @@ abstract class data_transformer {
      * @return mixed
      */
     abstract public function transform($row);
-
-    /**
-     * Get import identifier
-     *
-     * @return int
-     */
-    public function get_import_id() {
-        return $this->importexternalid;
-    }
-
-    /**
-     * Set import identifier
-     *
-     * @param int $importid
-     */
-    public function set_import_id($importid) {
-        $this->importexternalid = $importid;
-    }
 }

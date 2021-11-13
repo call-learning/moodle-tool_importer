@@ -20,7 +20,7 @@
  * Built from datasource, transformer and importer.
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,7 +29,6 @@ namespace tool_importer;
 use progress_bar;
 use text_progress_trace;
 use tool_importer\local\import_log;
-use tool_importer\local\validation_log;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,10 +38,10 @@ defined('MOODLE_INTERNAL') || die();
  * Basic importer routine
  *
  * @package     tool_importer
- * @copyright   2020 CALL Learning <laurent@call-learning.fr>
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class importer {
+class processor {
     /**
      * @var data_source
      */
@@ -68,12 +67,10 @@ class importer {
      * @var int number of imported rows (reset for each importation)
      */
     protected $rowimported = 0;
-
     /**
-     * @var $validationtempfile null Validation temporary file. This is necessary as validation relies on
-     * transaction, so we need to use another mean of storage.
+     * @var int $importexternalid
      */
-    protected $validationtempfile = null;
+    private $importexternalid = 0;
 
     /**
      * Importer constructor.
@@ -90,28 +87,27 @@ class importer {
         data_transformer $transformer,
         data_importer $importer,
         $progressbar = null,
-        $importid = null,
+        $importid = 0,
         $importlogclass = null
     ) {
+        $this->importexternalid = $importid;
         $this->source = $source;
-        if ($importid != null) {
-            $transformer->set_import_id($importid);
-            $importer->set_import_id($importid);
-        }
         $this->transformer = $transformer;
         $this->importer = $importer;
         $this->progressbar = $progressbar;
-        $tempfolder = make_temp_directory('tool_importer');
-        $this->validationtempfile = $tempfolder . '/' . rand();
+        $this->transformer->set_processor($this);
+        $this->source->set_processor($this);
+        $this->importer->set_processor($this);
     }
 
     /**
      * Import the whole set of entities
+     * @return bool true when ok, false when error
      */
     public function import() {
         $this->importer->set_import_mode();
         $haserrors = $this->do_import();
-        return $haserrors;
+        return !$haserrors;
     }
 
     /**
@@ -119,8 +115,7 @@ class importer {
      *
      * The validation log is purged before we start the validation process
      * TODO: deal with concurrency.
-     *
-     * @throws \dml_transaction_exception if stansaction active
+     * @return bool true when valid, false when invalid
      */
     public function validate() {
         $this->purge_validation_log();
@@ -140,7 +135,7 @@ class importer {
             $haserrors = true;
         }
 
-        return $haserrors;
+        return !$haserrors;
     }
 
     /**
@@ -279,7 +274,36 @@ class importer {
      *
      * @return data_importer
      */
-    public function get_data_importer() {
+    public function get_importer() {
         return $this->importer;
     }
+
+
+    /**
+     * Get the related data source
+     *
+     * @return data_source
+     */
+    public function get_source() {
+        return $this->source;
+    }
+
+    /**
+     * Get the related data transformer
+     *
+     * @return data_transformer
+     */
+    public function get_transformer() {
+        return $this->transformer;
+    }
+
+    /**
+     * Get import identifier
+     *
+     * @return int
+     */
+    public function get_import_id() {
+        return $this->importexternalid;
+    }
+
 }

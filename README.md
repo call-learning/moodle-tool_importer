@@ -69,7 +69,7 @@ value in the matching custom field.
 
 ## License ##
 
-2020 CALL Learning <laurent@call-learning.fr>
+2021 CALL Learning <laurent@call-learning.fr>
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
