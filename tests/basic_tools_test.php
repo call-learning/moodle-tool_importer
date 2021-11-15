@@ -43,14 +43,14 @@ class basic_tools_test extends advanced_testcase {
         $this->resetAfterTest();
         $source = new inmemory_data_source($datagrid);
         $inmemoryimporter = new inmemory_importer($source);
-        $importer = new processor($source, new minimal_transformer(), $inmemoryimporter);
-        $isvalid = $importer->import();
+        $processor = new processor($source, new minimal_transformer(), $inmemoryimporter);
+        $isvalid = $processor->import();
         $this->assertEquals($expected['isvalid'], $isvalid);
         $this->assertEquals($expected['result'], $inmemoryimporter->resultarray);
         $this->assertEquals($expected['importlogs'],
             array_map(function($log) {
                 return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'origin']));
-            }, \tool_importer\local\import_log::get_records())
+            }, $processor->get_logger()->get_logs())
         );
     }
 
@@ -193,13 +193,13 @@ class basic_tools_test extends advanced_testcase {
             $this->expectException($results['exception']);
         }
 
-        $importer = $this->create_importer_from_params($filename);
-        $isvalid = $importer->import();
+        $processor = $this->create_processor_from_params($filename);
+        $isvalid = $processor->import();
         $this->assertEquals($results['isvalid'], $isvalid, $filename);
         $this->assertEquals($errors,
             array_map(function($log) {
                 return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
-            }, \tool_importer\local\import_log::get_records()),
+            }, $processor->get_logger()->get_logs()),
             $filename
         );
     }
@@ -306,25 +306,25 @@ class basic_tools_test extends advanced_testcase {
      */
     public function test_validate_basic($filename, $results, $errors) {
         $this->resetAfterTest();
-        $importer = $this->create_importer_from_params($filename);
-        $isvalid = $importer->validate();
-        $this->assertEmpty(\tool_importer\local\import_log::get_records(['validationstep' => 0]));
+        $processor = $this->create_processor_from_params($filename);
+        $isvalid = $processor->validate();
+        $this->assertEmpty($processor->get_logger()->get_logs(['validationstep' => 0]));
         $this->assertEquals($results['isvalid'], $isvalid, $filename);
         $this->assertEquals($errors,
             array_map(function($log) {
                 return array_intersect_key((array) $log->to_record(), array_flip(['linenumber', 'messagecode', 'fieldname']));
-            }, $importer->get_validation_log()),
+            }, $processor->get_validation_log()),
             $filename
         );
     }
 
     /**
-     * Create importer and csv importer in one go.
+     * Create processor and csv importer in one go.
      *
      * @param $filename
      * @return processor
      */
-    protected function create_importer_from_params($filename) {
+    protected function create_processor_from_params($filename) {
         global $CFG;
         $csvimporter = new class(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/' . $filename)

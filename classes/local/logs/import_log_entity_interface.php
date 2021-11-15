@@ -13,51 +13,21 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-namespace tool_importer;
-
+namespace tool_importer\local\logs;
 defined('MOODLE_INTERNAL') || die();
-
 /**
- * Data processor class.
- *
- * Take a processed row and make it persistent
- *
- * This class will be derived according to the type of data to be imported.
+ * Interface import_log_entity_interface
  *
  * @package     tool_importer
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface data_processor_interface {
+interface import_log_entity_interface {
     /**
-     * Set importer
-     */
-    public function set_processor(processor $importer);
-
-    /**
-     * Get import identifier helper
+     * Get message (human readable)
      *
-     * @return int
+     * @return string
+     * @throws \coding_exception
      */
-    public function get_import_id();
-
-    /**
-     * Get related data source
-     */
-    public function get_source();
-
-    /**
-     * Get related data transformer
-     */
-    public function get_transformer();
-
-    /**
-     * Get related data importer
-     */
-    public function get_importer();
-    /**
-     * Get related data importer
-     */
-    public function get_logger();
+    public function get_full_message();
 }

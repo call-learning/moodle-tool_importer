@@ -14,10 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_importer\local;
+namespace tool_importer\local\logs;
 
 use core\persistent;
 use stdClass;
+use tool_importer\local\log_levels;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -28,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class import_log extends persistent {
+class import_log_entity extends persistent implements import_log_entity_interface {
 
     /**
      * Related table
@@ -139,28 +140,5 @@ class import_log extends persistent {
         $json = json_encode($this->get('additionalinfo'));
         return "$record->messagecode ({$record->level}: line {$record->linenumber}
         {$record->fieldname} - $json";
-    }
-
-    /**
-     * From generic exception
-     *
-     * @param \moodle_exception $e
-     * @param array $overrides contains at least the values for importid, level and module
-     * @return import_log
-     */
-    public static function from_exception(\moodle_exception $e, array $overrides) {
-        $importloginfo = new stdClass();
-        $importloginfo->messagecode = $e->errorcode;
-        $importloginfo->origin = $overrides['origin'] ?? 'unknown';
-        $importloginfo->module = $e->module ?? ($overrides['module'] ?? 'tool_importer');
-        $importloginfo->level = $e->level ?? ($overrides['level'] ?? log_levels::LEVEL_ERROR);
-        $importloginfo->linenumber = $e->linenumber ?? ($overrides['linenumber'] ?? 0);
-        $importloginfo->fieldname = $e->fieldname ?? '';
-        $importloginfo->importid = $overrides['importid'];
-        $importloginfo->additionalinfo = $e->a ?? '';
-        if (!is_string($importloginfo->additionalinfo)) {
-            $importloginfo->additionalinfo = json_encode($importloginfo->additionalinfo);
-        }
-        return new import_log(0, $importloginfo);
     }
 }

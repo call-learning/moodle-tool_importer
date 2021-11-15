@@ -13,51 +13,41 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+namespace tool_importer\local\logs;
 
-namespace tool_importer;
-
-defined('MOODLE_INTERNAL') || die();
+use core\persistent;
 
 /**
- * Data processor class.
- *
- * Take a processed row and make it persistent
- *
- * This class will be derived according to the type of data to be imported.
+ * Class import logger
  *
  * @package     tool_importer
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface data_processor_interface {
+interface import_logger {
     /**
-     * Set importer
-     */
-    public function set_processor(processor $importer);
-
-    /**
-     * Get import identifier helper
+     * From generic exception
      *
-     * @return int
+     * @param \moodle_exception $e
+     * @param array $overrides contains at least the values for importid, level and module
+     * @return import_log_entity
      */
-    public function get_import_id();
+    public function log_from_exception(\moodle_exception $e, array $overrides);
 
     /**
-     * Get related data source
+     * Get logs from filters
+     *
+     * @param array $filters
+     * @return persistent[]
+     * @throws \coding_exception
      */
-    public function get_source();
+    public function get_logs($filters = []);
 
     /**
-     * Get related data transformer
+     * Get related persistent class
+     *
+     * @return string
+     * @throws \coding_exception
      */
-    public function get_transformer();
-
-    /**
-     * Get related data importer
-     */
-    public function get_importer();
-    /**
-     * Get related data importer
-     */
-    public function get_logger();
+    public function get_log_persistent_class();
 }

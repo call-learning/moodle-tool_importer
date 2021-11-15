@@ -72,4 +72,11 @@ trait data_processor_impl {
     public function get_importer() {
         return empty($this->processor) ? null : $this->processor->get_importer();
     }
+    /**
+     * Get related data logger
+     */
+    public function get_logger() {
+        return empty($this->processor) ? null : $this->processor->get_logger();
+    }
+
 }

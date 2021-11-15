@@ -26,9 +26,12 @@
 
 namespace tool_importer;
 
+use core\persistent;
 use progress_bar;
 use text_progress_trace;
 use tool_importer\local\import_log;
+use tool_importer\local\logs\basic_import_logger;
+use tool_importer\local\logs\import_logger;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -80,7 +83,7 @@ class processor {
      * @param data_importer $importer
      * @param progress_bar $progressbar
      * @param int $importid (null if not set)
-     * @param string $importlogclass
+     * @param import_logger $importlogger
      */
     public function __construct(
         data_source $source,
@@ -88,7 +91,7 @@ class processor {
         data_importer $importer,
         $progressbar = null,
         $importid = 0,
-        $importlogclass = null
+        $importlogger = null
     ) {
         $this->importexternalid = $importid;
         $this->source = $source;
@@ -98,10 +101,14 @@ class processor {
         $this->transformer->set_processor($this);
         $this->source->set_processor($this);
         $this->importer->set_processor($this);
+        if (empty($importlogger)) {
+            $this->importlogger = new basic_import_logger();
+        }
     }
 
     /**
      * Import the whole set of entities
+     *
      * @return bool true when ok, false when error
      */
     public function import() {
@@ -115,6 +122,7 @@ class processor {
      *
      * The validation log is purged before we start the validation process
      * TODO: deal with concurrency.
+     *
      * @return bool true when valid, false when invalid
      */
     public function validate() {
@@ -124,7 +132,7 @@ class processor {
             $haserrors = $this->do_import();
             $this->source->rewind();
         } catch (\moodle_exception $e) {
-            $log = import_log::from_exception($e, [
+            $log = $this->importlogger->log_from_exception($e, [
                 'linenumber' => 0,
                 'module' => $this->module,
                 'origin' => $this->source->get_origin(),
@@ -160,7 +168,7 @@ class processor {
                 $this->update_progress_bar($this->rowimported);
             } catch (\moodle_exception $e) {
                 $haserrors = true;
-                $log = import_log::from_exception($e, [
+                $log = $this->importlogger->log_from_exception($e, [
                     'linenumber' => $rowindex,
                     'module' => $this->module,
                     'origin' => $this->source->get_origin(),
@@ -184,7 +192,8 @@ class processor {
      * @throws \dml_exception
      */
     public function purge_validation_log() {
-        $allvalidationlogs = import_log::get_records(['validationstep' => 1, 'importid' => $this->importer->get_import_id()]);
+        $allvalidationlogs = $this->importlogger->get_logs(['validationstep' => 1,
+            'importid' => $this->importer->get_import_id()]);
         foreach ($allvalidationlogs as $log) {
             $log->delete();
         }
@@ -193,10 +202,11 @@ class processor {
     /**
      * Get validation errors
      *
-     * @return import_log[]
+     * @return persistent[]
      */
     public function get_validation_log() {
-        return import_log::get_records(['validationstep' => 1, 'importid' => $this->importer->get_import_id()]);
+        return $this->importlogger->get_logs(['validationstep' => 1,
+            'importid' => $this->importer->get_import_id()]);
     }
 
     /**
@@ -278,7 +288,6 @@ class processor {
         return $this->importer;
     }
 
-
     /**
      * Get the related data source
      *
@@ -306,4 +315,12 @@ class processor {
         return $this->importexternalid;
     }
 
+    /**
+     * Get import identifier
+     *
+     * @return
+     */
+    public function get_logger() {
+        return $this->importlogger;
+    }
 }
