@@ -46,28 +46,30 @@ class import_log_entity extends persistent implements import_log_entity_interfac
         if (!empty($record) && !empty($record->type) && is_string($record->type)) {
             $record->level = log_levels::convert_level_name_to_level_number($record->type) ?? log_levels::LEVEL_INFO;
         }
+        $record->additionalinfo =
+            is_string($record->additionalinfo) ? $record->additionalinfo : json_encode($record->additionalinfo);
         parent::__construct($id, $record);
-        if (!is_null(json_decode($record->additionalinfo))) {
-            $record->additionalinfo = json_decode($record->additionalinfo);
-        }
+
     }
 
     /**
      * Add more info to the log (and encode it if to be stored in db)
      *
-     * @param $value
+     * @param object|string $value
      */
     protected function set_additionalinfo($value) {
-        $this->data['additionalinfo'] = is_string($value) ? $value : json_encode($value);
+        $this->raw_set('additionalinfo',is_string($value) ? $value : json_encode($value));
     }
 
     /**
      * Get additional info and decode it from the db
+     *
      * @return mixed
      */
     protected function get_additionalinfo() {
-        $json = json_decode($this->data['additionalinfo']);
-        return $json ?? $this->data['additionalinfo'];
+        $data = $this->raw_get('additionalinfo');
+        $json = json_decode($data);
+        return $json ?? $data;
     }
 
     /**
@@ -137,8 +139,19 @@ class import_log_entity extends persistent implements import_log_entity_interfac
      */
     public function get_full_message() {
         $record = $this->to_record();
-        $json = json_encode($this->get('additionalinfo'));
-        return "$record->messagecode ({$record->level}: line {$record->linenumber}
-        {$record->fieldname} - $json";
+        $data = $this->get('additionalinfo');
+        if (is_object($data)) {
+            $data = $data->info ?? '';
+        }
+        $message = get_string($record->messagecode, $record->module, $data);
+
+        return get_string('importlog:message',
+            'tool_importer',
+            (object)[
+                'line' => $record->linenumber,
+                'message' => $message,
+                'level' => strtoupper(log_levels::LEVEL_TO_SN[$record->level] ?? ''),
+                'fieldname' => $record->fieldname
+            ]);
     }
 }

@@ -74,10 +74,11 @@ class course_data_importer extends data_importer {
      *
      * @param array $row associative array storing the record
      * @param int $rowindex
+     * @param mixed|null $options import options
      * @return mixed|void
      * @throws importer_exception
      */
-    protected function raw_import($row, $rowindex) {
+    protected function raw_import($row, $rowindex, $options = null) {
         global $DB;
         $existingcourse = !empty($row['idnumber']) && (
             $DB->record_exists('course', array('idnumber' => $row['idnumber'])));
@@ -130,9 +131,10 @@ class course_data_importer extends data_importer {
      *
      * @param array $row
      * @param int $rowindex
+     * @param mixed|null $options import options
      * @throws validation_exception
      */
-    public function validate_after_transform($row, $rowindex) {
+    public function validate_after_transform($row, $rowindex, $options = null) {
         $transformedfields = [
             'fullname' => [
                 'type' => field_types::TYPE_TEXT,

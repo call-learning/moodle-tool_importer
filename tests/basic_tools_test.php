@@ -344,7 +344,7 @@ class basic_tools_test extends advanced_testcase {
                     return basic_tools_test::FIELD_DEFINITION;
                 }
 
-                protected function raw_import($row, $rowindex) {
+                protected function raw_import($row, $rowindex, $options = null) {
                     $this->importedrows[$rowindex] = $row;
                     // Do nothing.
                 }

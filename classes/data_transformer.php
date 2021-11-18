@@ -87,7 +87,8 @@ abstract class data_transformer  implements data_processor_interface {
      * Return the transformed row depending on the field transformer values.
      *
      * @param array $row an associative array (column => value)
+     * @param mixed|null $options import options
      * @return mixed
      */
-    abstract public function transform($row);
+    abstract public function transform($row, $options = null);
 }

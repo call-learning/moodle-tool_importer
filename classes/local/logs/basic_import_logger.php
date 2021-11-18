@@ -52,6 +52,7 @@ class basic_import_logger implements import_logger {
      * @return import_log_entity
      */
     public function log_from_exception(\moodle_exception $e, array $overrides) {
+        global $CFG;
         $importloginfo = new stdClass();
         $importloginfo->messagecode = $e->errorcode;
         $importloginfo->origin = $overrides['origin'] ?? 'unknown';
@@ -60,10 +61,21 @@ class basic_import_logger implements import_logger {
         $importloginfo->linenumber = $e->linenumber ?? ($overrides['linenumber'] ?? 0);
         $importloginfo->fieldname = $e->fieldname ?? '';
         $importloginfo->importid = $overrides['importid'];
-        $importloginfo->additionalinfo = $e->a ?? '';
-        if (!is_string($importloginfo->additionalinfo)) {
-            $importloginfo->additionalinfo = json_encode($importloginfo->additionalinfo);
+        $additionalinfo = $e->a ?? '';
+        $hasdebugdeveloper = (
+            isset($CFG->debugdisplay) &&
+            isset($CFG->debug) &&
+            $CFG->debugdisplay &&
+            $CFG->debug === DEBUG_DEVELOPER
+        );
+        if ($hasdebugdeveloper) {
+            $info = get_exception_info($e);
+            if ($info) {
+                $additionalinfo = (object) ['info' => $additionalinfo];
+                $additionalinfo->debuginfo = $info;
+            }
         }
+        $importloginfo->additionalinfo = $additionalinfo;
         return new import_log_entity(0, $importloginfo);
     }
 

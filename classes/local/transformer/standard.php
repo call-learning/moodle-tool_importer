@@ -45,9 +45,10 @@ class standard extends data_transformer {
      * Return the transformed row depending on the field transformer values.
      *
      * @param array $row an associative array (column => value)
+     * @param mixed|null $options import options
      * @return mixed
      */
-    public function transform($row) {
+    public function transform($row, $options = null) {
         $resultrow = [];
         $separators = [];
         foreach ($row as $fieldname => $fieldvalue) {

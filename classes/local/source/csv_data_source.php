@@ -100,21 +100,28 @@ abstract class csv_data_source extends data_source {
      * looking at accents or spaces.
      */
     private $exactcolumnname;
+    /**
+     * @var string $originalfilename the original filename, used when temp files are created to load the file from draft area.
+     */
+    private string $originalfilename;
 
     /**
      * csv_data_source constructor.
      *
      * @param string $csvfilepath
+     * @param string $originalfilename
      * @param string $separator
      * @param string $encoding
      * @param bool $exactcolumnname should the column name be compared on an exact basis (space and accent)
      * @throws importer_exception
      */
-    public function __construct($csvfilepath, $separator = 'semicolon', $encoding = 'utf-8', $exactcolumnname = false) {
+    public function __construct($csvfilepath, $separator = 'semicolon', $encoding = 'utf-8', $originalfilename = '',
+        $exactcolumnname = false) {
         $this->csvfilepath = $csvfilepath;
         $this->separator = $separator;
         $this->encoding = $encoding;
         $this->exactcolumnname = $exactcolumnname;
+        $this->originalfilename = $originalfilename;
     }
 
     /**
@@ -122,9 +129,10 @@ abstract class csv_data_source extends data_source {
      *
      * This will initialise the current source. This has to be called before we call current or rewind.
      *
+     * @param mixed|null $options additional importer options
      * @throws importer_exception
      */
-    public function init_and_check() {
+    public function init_and_check($options = null) {
         global $CFG;
         require_once($CFG->libdir . '/csvlib.class.php');
         $importid = csv_import_reader::get_new_iid('upload_course_datasource');
@@ -140,15 +148,14 @@ abstract class csv_data_source extends data_source {
         if (empty($this->csvimporter)) {
             $this->csvimporter = new csv_import_reader($importid, 'upload_course_datasource');
         }
-        $this->csvimporter->init();
+        $this->csvimporter->init($options);
         $content = file_get_contents($this->csvfilepath);
         if (!mb_detect_encoding($content, $this->encoding, true)) {
             throw new importer_exception('wrongencoding',
                 -1,
                 '',
                 'tool_importer',
-                basename($this->csvfilepath) . " expected format is $this->encoding but encoding is " .
-                mb_detect_encoding($content),
+                (object) ['expected' => $this->encoding, 'actual' => mb_detect_encoding($content)],
                 log_levels::LEVEL_ERROR);
         }
         $this->rowcount = $this->csvimporter->load_csv_content($content, $this->encoding, $this->separator);
@@ -299,6 +306,6 @@ abstract class csv_data_source extends data_source {
      * @return string|null
      */
     public function get_source_identifier() {
-        return $this->csvfilepath;
+        return empty($this->originalfilename) ? $this->csvfilepath : $this->originalfilename;
     }
 }

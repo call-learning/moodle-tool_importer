@@ -196,9 +196,10 @@ class minimal_transformer extends data_transformer {
      * Transform function
      *
      * @param array $row
+     * @param mixed|null $options import options
      * @return array|mixed
      */
-    public function transform($row) {
+    public function transform($row, $options = null) {
         $outrow = $row;
         $outrow['newcol1'] = $row['col1'];
         unset($outrow['col1']);
@@ -222,9 +223,10 @@ class inmemory_importer extends data_importer {
      * Raw import
      *
      * @param $row
+     * @param mixed|null $options import options
      * @return mixed|void
      */
-    public function raw_import($row, $rowindex) {
+    public function raw_import($row, $rowindex, $options = null) {
         $this->resultarray[] = $row;
     }
 }

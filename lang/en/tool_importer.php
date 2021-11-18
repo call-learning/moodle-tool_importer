@@ -30,3 +30,5 @@ $string['process:progress'] = 'Processing import';
 $string['log:level:warning'] = 'Warning';
 $string['log:level:error'] = 'Error';
 $string['log:level:info'] = 'Info';
+$string['importlog:message']  = '{$a->level} (Line {$a->line}, Field:{$a->fieldname}): {$a->message}';
+$string['columnmissing'] = 'Column missing';

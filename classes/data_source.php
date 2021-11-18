@@ -58,10 +58,10 @@ abstract class data_source implements Iterator, data_processor_interface {
      * Initialise the csv datasource.
      *
      * This will initialise the current source. This has to be called before we call current or rewind.
-     *
+     * @param mixed|null $options additional importer options
      * @throws importer_exception
      */
-    public function init_and_check() {
+    public function init_and_check($options = null) {
         // Nothing for now.
     }
 

@@ -64,8 +64,9 @@ abstract class data_importer implements data_processor_interface {
      * Called just before importation or validation.
      *
      * Gives a chance to reinit values or local information before a real import.
+     * @param mixed|null $options additional importer options
      */
-    public function init() {
+    public function init($options = null) {
         // Nothing for now but will be overriden accordingly.
     }
 
@@ -87,12 +88,13 @@ abstract class data_importer implements data_processor_interface {
      *
      * @param array $row
      * @param int $rowindex
+     * @param mixed|null $options import options
      * @return mixed
      */
-    public function import_row($row, $rowindex) {
+    public function import_row($row, $rowindex, $options = null) {
         if ($this->is_import_mode()) {
-            $data = $this->raw_import($row, $rowindex);
-            $this->after_row_imported($row, $data, $rowindex);
+            $data = $this->raw_import($row, $rowindex, $options);
+            $this->after_row_imported($row, $data, $rowindex, $options);
         }
     }
 
@@ -101,9 +103,10 @@ abstract class data_importer implements data_processor_interface {
      *
      * @param array $row
      * @param mixed $data
+     * @param mixed|null $options import options
      * @param int $rowindex
      */
-    public function after_row_imported($row, $data, $rowindex) {
+    public function after_row_imported($row, $data, $rowindex, $options = null) {
         // Nothing for now but can be overridden.
     }
 
@@ -112,20 +115,21 @@ abstract class data_importer implements data_processor_interface {
      *
      * @param array $row
      * @param int $rowindex
-     *
+     * @param mixed|null $options import options
      * @return mixed
      */
-    abstract protected function raw_import($row, $rowindex);
+    abstract protected function raw_import($row, $rowindex, $options = null);
 
     /**
      * Check if row is valid before transformation.
      *
      * @param array $row
      * @param int $rowindex
+     * @param mixed|null $options import options
      * @throws validation_exception
      */
-    public function validate_before_transform($row, $rowindex) {
-        $this->validate_from_field_definition($this->get_fields_definition(), $row, $rowindex);
+    public function validate_before_transform($row, $rowindex, $options = null) {
+        $this->validate_from_field_definition($this->get_fields_definition(), $row, $rowindex, $options);
     }
 
     /**
@@ -138,16 +142,17 @@ abstract class data_importer implements data_processor_interface {
      * [ 'type' => TYPE_XXX, ...]
      * @param array $row
      * @param int $rowindex
+     * @param mixed|null $options import options
      * @throws validation_exception
      */
-    protected function validate_from_field_definition($fielddefinitionlist, $row, $rowindex) {
+    protected function validate_from_field_definition($fielddefinitionlist, $row, $rowindex, $options = null) {
         foreach ($fielddefinitionlist as $fieldname => $value) {
             if (empty($value['type'])) {
                 throw new validation_exception('typenotspecified',
                     $rowindex,
                     $fieldname,
                     $this->module,
-                    'coding error: type unspecified',
+                    '',
                     log_levels::LEVEL_ERROR
                 );
             }
@@ -184,7 +189,7 @@ abstract class data_importer implements data_processor_interface {
      * @param int $rowindex
      * @throws validation_exception
      */
-    public function validate_after_transform($row, $rowindex) {
+    public function validate_after_transform($row, $rowindex, $options = null) {
     }
 
     /**
@@ -196,7 +201,7 @@ abstract class data_importer implements data_processor_interface {
      * @param array $row
      * @param int $rowindex
      */
-    public function fix_before_transform(&$row, $rowindex) {
+    public function fix_before_transform(&$row, $rowindex, $options = null) {
     }
 
     /**

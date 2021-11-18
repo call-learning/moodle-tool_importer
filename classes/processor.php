@@ -109,27 +109,30 @@ class processor {
     /**
      * Import the whole set of entities
      *
+     * @param mixed|null $options additional importer options
      * @return bool true when ok, false when error
      */
-    public function import() {
+    public function import($options = null) {
         $this->importer->set_import_mode();
-        $haserrors = $this->do_import();
+        $haserrors = $this->do_import($options);
         return !$haserrors;
     }
 
     /**
      * Validate the rows.
      *
+     * @param mixed $options
+     *
      * The validation log is purged before we start the validation process
      * TODO: deal with concurrency.
      *
      * @return bool true when valid, false when invalid
      */
-    public function validate() {
-        $this->purge_validation_log();
+    public function validate($options = null) {
+        $this->purge_validation_logs();
         $this->importer->set_validation_mode();
         try {
-            $haserrors = $this->do_import();
+            $haserrors = $this->do_import($options);
             $this->source->rewind();
         } catch (\moodle_exception $e) {
             $log = $this->importlogger->log_from_exception($e, [
@@ -147,23 +150,24 @@ class processor {
     }
 
     /**
+     * @param mixed $options
      * Import the whole set of entities or just validate, depending on the mode we are in.
      */
-    protected function do_import() {
+    protected function do_import($options = null) {
         $this->reset_row_imported();
         $haserrors = false;
         $rowindex = 0;
-        $this->source->init_and_check();
+        $this->source->init_and_check($options);
         $this->source->rewind();
-        $this->importer->init();
+        $this->importer->init($options);
         while ($this->source->valid()) {
             try {
                 $row = $this->source->current();
-                $this->importer->fix_before_transform($row, $rowindex);
-                $this->importer->validate_before_transform($row, $rowindex);
-                $transformedrow = $this->transformer->transform($row);
-                $this->importer->validate_after_transform($transformedrow, $rowindex);
-                $this->importer->import_row($transformedrow, $rowindex);
+                $this->importer->fix_before_transform($row, $rowindex, $options);
+                $this->importer->validate_before_transform($row, $rowindex, $options);
+                $transformedrow = $this->transformer->transform($row, $options);
+                $this->importer->validate_after_transform($transformedrow, $rowindex, $options);
+                $this->importer->import_row($transformedrow, $rowindex, $options);
                 $this->increment_row_imported();
                 $this->update_progress_bar($this->rowimported);
             } catch (\moodle_exception $e) {
@@ -191,7 +195,7 @@ class processor {
      *
      * @throws \dml_exception
      */
-    public function purge_validation_log() {
+    public function purge_validation_logs() {
         $allvalidationlogs = $this->importlogger->get_logs(['validationstep' => 1,
             'importid' => $this->importer->get_import_id()]);
         foreach ($allvalidationlogs as $log) {
@@ -246,6 +250,14 @@ class processor {
      */
     public function get_row_imported_count() {
         return $this->rowimported;
+    }
+
+    /**
+     * Get statistics in a displayable (HTML) format
+     * @return string
+     */
+    public function get_displayable_stats() {
+        return '';
     }
 
     /**
