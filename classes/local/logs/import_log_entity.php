@@ -150,7 +150,7 @@ class import_log_entity extends persistent implements import_log_entity_interfac
             (object)[
                 'line' => $record->linenumber,
                 'message' => $message,
-                'level' => strtoupper(log_levels::LEVEL_TO_SN[$record->level] ?? ''),
+                'level' => strtoupper(log_levels::to_displayable_string($record->level)),
                 'fieldname' => $record->fieldname
             ]);
     }

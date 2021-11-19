@@ -67,4 +67,9 @@ class log_levels {
         $levelclean = trim(strtolower($levelname));
         return $converter[$levelclean] ?? null;
     }
+
+    public static function to_displayable_string(int $level, $module = 'tool_importer') {
+        $levelsn = self::LEVEL_TO_SN[$level] ?? '';
+        return get_string('log:level:'.$levelsn, $module);
+    }
 }
