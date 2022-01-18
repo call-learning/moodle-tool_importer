@@ -19,6 +19,7 @@ namespace tool_importer\local\logs;
 use core\persistent;
 use stdClass;
 use tool_importer\local\log_levels;
+use tool_importer\processor;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,13 +34,14 @@ class basic_import_logger implements import_logger {
     /**
      * Get message (human readable)
      *
-     * @param $logid identifier of the log
+     * @param int $logid identifier of the log
      * @return string
      * @throws \coding_exception
      */
     public function get_full_message($logid) {
-        $record = $this->to_record();
-        $json = json_encode($this->get('additionalinfo'));
+        $importlog = import_log_entity::get_record(['id' => $logid]);
+        $record = $importlog->to_record();
+        $json = json_encode($importlog->get('additionalinfo'));
         return "$record->messagecode ({$record->level}: line {$record->linenumber}
         {$record->fieldname} - $json";
     }
@@ -98,5 +100,36 @@ class basic_import_logger implements import_logger {
      */
     public function get_log_persistent_class() {
         return import_log_entity::class;
+    }
+
+    /**
+     * Create log
+     *
+     * @param int $linenumber
+     * @param string $messagecode
+     * @param string $fieldname
+     * @param processor $processor
+     * @param mixed $additionalinfo
+     * @param int $level
+     * @return string|void
+     * @throws \coding_exception
+     * @throws \core\invalid_persistent_exception
+     */
+    public function create_log($linenumber, $messagecode, $fieldname, processor $processor, $additionalinfo = '',
+            $level = log_levels::LEVEL_WARNING) {
+        $log = new import_log_entity(
+                0,
+                (object) [
+                        'linenumber' => $linenumber,
+                        'messagecode' => $messagecode,
+                        'module' => $processor->get_module(),
+                        'additionalinfo' => $additionalinfo,
+                        'fieldname' => $fieldname,
+                        'level' => $level,
+                        'origin' => $processor->get_source()->get_source_type() . ':' .
+                                $processor->get_source()->get_source_identifier(),
+                        'importid' => $processor->get_import_id()
+                ]);
+        $log->create();
     }
 }

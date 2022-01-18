@@ -68,6 +68,14 @@ class log_levels {
         return $converter[$levelclean] ?? null;
     }
 
+    /**
+     * Human-readable version of this level
+     *
+     * @param int $level
+     * @param string $module
+     * @return \lang_string|string
+     * @throws \coding_exception
+     */
     public static function to_displayable_string(int $level, $module = 'tool_importer') {
         $levelsn = self::LEVEL_TO_SN[$level] ?? '';
         return get_string('log:level:'.$levelsn, $module);

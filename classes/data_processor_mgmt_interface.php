@@ -13,6 +13,13 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Data processor Interface.
+ *
+ * @package     tool_importer
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace tool_importer;
 
@@ -29,11 +36,20 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface data_processor_interface {
+interface data_processor_mgmt_interface {
     /**
-     * Set importer
+     * Set processor
+     *
+     * @param processor $processor
      */
-    public function set_processor(processor $importer);
+    public function set_processor(processor $processor);
+
+    /**
+     * Get import identifier
+     *
+     * @return processor
+     */
+    public function get_processor();
 
     /**
      * Get import identifier helper

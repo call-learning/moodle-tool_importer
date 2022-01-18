@@ -25,15 +25,13 @@
  */
 
 namespace tool_importer;
+defined('MOODLE_INTERNAL') || die();
 
 use core\persistent;
 use progress_bar;
 use text_progress_trace;
-use tool_importer\local\import_log;
 use tool_importer\local\logs\basic_import_logger;
 use tool_importer\local\logs\import_logger;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class importer
@@ -84,6 +82,7 @@ class processor {
      * @param progress_bar $progressbar
      * @param int $importid (null if not set)
      * @param import_logger $importlogger
+     * @param string $module
      */
     public function __construct(
         data_source $source,
@@ -91,7 +90,8 @@ class processor {
         data_importer $importer,
         $progressbar = null,
         $importid = 0,
-        $importlogger = null
+        $importlogger = null,
+        $module = 'tool_importer'
     ) {
         $this->importexternalid = $importid;
         $this->source = $source;
@@ -101,6 +101,7 @@ class processor {
         $this->transformer->set_processor($this);
         $this->source->set_processor($this);
         $this->importer->set_processor($this);
+        $this->module = $module;
         if (empty($importlogger)) {
             $this->importlogger = new basic_import_logger();
         }
@@ -150,8 +151,11 @@ class processor {
     }
 
     /**
+     * Real Import routine
+     *
      * @param mixed $options
      * Import the whole set of entities or just validate, depending on the mode we are in.
+     * @return bool
      */
     protected function do_import($options = null) {
         $this->reset_row_imported();
@@ -292,6 +296,15 @@ class processor {
     }
 
     /**
+     * Get related module name
+     *
+     * @return mixed|string
+     */
+    public function get_module() {
+        return $this->module;
+    }
+
+    /**
      * Get the related data importer
      *
      * @return data_importer
@@ -330,7 +343,6 @@ class processor {
     /**
      * Get import identifier
      *
-     * @return
      */
     public function get_logger() {
         return $this->importlogger;

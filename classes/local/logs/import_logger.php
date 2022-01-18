@@ -13,9 +13,18 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * Class import logger
+ *
+ * @package     tool_importer
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace tool_importer\local\logs;
 
 use core\persistent;
+use tool_importer\local\log_levels;
+use tool_importer\processor;
 
 /**
  * Class import logger
@@ -50,4 +59,23 @@ interface import_logger {
      * @throws \coding_exception
      */
     public function get_log_persistent_class();
+
+    /**
+     * Create log
+     *
+     * Helper method to create log.
+     *
+     * @param int $linenumber
+     * @param string $messagecode
+     * @param string $fieldname
+     * @param processor $processor
+     * @param mixed $additionalinfo
+     * @param int $level
+     * @return string|void
+     * @throws \coding_exception
+     * @throws \core\invalid_persistent_exception
+     */
+    public function create_log($linenumber, $messagecode, $fieldname, processor $processor, $additionalinfo = '',
+            $level = log_levels::LEVEL_WARNING);
+
 }

@@ -36,8 +36,8 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @package tool_importer
  */
-abstract class data_transformer  implements data_processor_interface {
-    use data_processor_impl;
+abstract class data_transformer  implements data_processor_mgmt_interface {
+    use data_processor_mgmt_impl;
     /**
      * @var array transformation definition
      */

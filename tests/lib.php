@@ -69,15 +69,17 @@ class inmemory_data_source extends data_source {
     ];
 
     /**
-     * Data array
+     * @var array|string[][] Data array
      */
     public $dataarray = [];
+
     /**
-     * Field def
+     * @var array|array[] $fielddefinitionField def
      */
     public $fielddefinition = [];
+
     /**
-     * Current row
+     * @var int $currentrow Current row
      */
     protected $currentrow = 0;
 
@@ -217,14 +219,17 @@ class minimal_transformer extends data_transformer {
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class inmemory_importer extends data_importer {
+    /**
+     * @var array $resultarray set of expected results
+     */
     public $resultarray = [];
 
     /**
      * Raw import
      *
-     * @param $row
+     * @param array $row
+     * @param int $rowindex
      * @param mixed|null $options import options
-     * @return mixed|void
      */
     public function raw_import($row, $rowindex, $options = null) {
         $this->resultarray[] = $row;

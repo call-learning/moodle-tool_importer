@@ -13,8 +13,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Interface import_log_entity_interface
+ *
+ * @package     tool_importer
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 namespace tool_importer\local\logs;
-defined('MOODLE_INTERNAL') || die();
 /**
  * Interface import_log_entity_interface
  *
@@ -26,8 +33,8 @@ interface import_log_entity_interface {
     /**
      * Get message (human readable)
      *
+     * @package     tool_importer
      * @return string
-     * @throws \coding_exception
      */
     public function get_full_message();
 }

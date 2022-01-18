@@ -77,6 +77,11 @@ class course_dataimporter_test extends advanced_testcase {
         $this->csvimporter = new class(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv')
             extends \tool_importer\local\source\csv_data_source {
+            /**
+             * Get field definition
+             *
+             * @return array[]
+             */
             public function get_fields_definition() {
                 return course_dataimporter_test::CSV_DEFINITION;
             }
@@ -139,7 +144,8 @@ class course_dataimporter_test extends advanced_testcase {
     }
 
     /**
-     * @throws dml_exception
+     * Test simple course with custom fields
+     *
      */
     public function test_simple_course_with_customfields() {
         global $DB;

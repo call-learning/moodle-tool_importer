@@ -14,18 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * CSV Data source for courses
- *
- * Take a processed row and make it persistent
- *
- * This class will be derived according to the type of data to be imported.
- *
- * @package     tool_importer
- * @copyright   2021 CALL Learning <laurent@call-learning.fr>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace tool_importer\local\source;
 
 use csv_import_reader;
@@ -37,7 +25,11 @@ use tool_importer\local\utils;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class csv_data_source
+ * CSV Data source for courses
+ *
+ * Take a processed row and make it persistent
+ *
+ * This class will be derived according to the type of data to be imported.
  *
  * @package     tool_importer
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
@@ -103,17 +95,16 @@ abstract class csv_data_source extends data_source {
     /**
      * @var string $originalfilename the original filename, used when temp files are created to load the file from draft area.
      */
-    private string $originalfilename;
+    private $originalfilename;
 
     /**
      * csv_data_source constructor.
      *
      * @param string $csvfilepath
-     * @param string $originalfilename
      * @param string $separator
      * @param string $encoding
+     * @param string $originalfilename
      * @param bool $exactcolumnname should the column name be compared on an exact basis (space and accent)
-     * @throws importer_exception
      */
     public function __construct($csvfilepath, $separator = 'semicolon', $encoding = 'utf-8', $originalfilename = '',
         $exactcolumnname = false) {

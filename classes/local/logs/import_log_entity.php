@@ -58,7 +58,7 @@ class import_log_entity extends persistent implements import_log_entity_interfac
      * @param object|string $value
      */
     protected function set_additionalinfo($value) {
-        $this->raw_set('additionalinfo',is_string($value) ? $value : json_encode($value));
+        $this->raw_set('additionalinfo', is_string($value) ? $value : json_encode($value));
     }
 
     /**

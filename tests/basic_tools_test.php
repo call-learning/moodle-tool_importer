@@ -14,6 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Test for basic tools
+ *
+ * @package     tool_importer
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 use tool_importer\field_types;
 use tool_importer\processor;
 use tool_importer\local\transformer\standard;
@@ -321,7 +328,7 @@ class basic_tools_test extends advanced_testcase {
     /**
      * Create processor and csv importer in one go.
      *
-     * @param $filename
+     * @param string $filename
      * @return processor
      */
     protected function create_processor_from_params($filename) {
@@ -329,6 +336,11 @@ class basic_tools_test extends advanced_testcase {
         $csvimporter = new class(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/' . $filename)
             extends \tool_importer\local\source\csv_data_source {
+            /**
+             * Get field definition
+             *
+             * @return array[]
+             */
             public function get_fields_definition() {
                 return basic_tools_test::FIELD_DEFINITION;
             }
@@ -339,16 +351,32 @@ class basic_tools_test extends advanced_testcase {
             $transformer,
             new class($csvimporter) extends \tool_importer\data_importer {
                 protected $importedrows = [];
-
+                /**
+                 * Get field definition
+                 *
+                 * @return array[]
+                 */
                 public function get_fields_definition() {
                     return basic_tools_test::FIELD_DEFINITION;
                 }
-
+                /**
+                 * Raw import
+                 *
+                 * @param array $row
+                 * @param int $rowindex
+                 * @param mixed $options
+                 * @return void
+                 */
                 protected function raw_import($row, $rowindex, $options = null) {
                     $this->importedrows[$rowindex] = $row;
                     // Do nothing.
                 }
 
+                /**
+                 * Get imported data
+                 *
+                 * @return array
+                 */
                 public function get_imported_data() {
                     return $this->importedrows;
                 }

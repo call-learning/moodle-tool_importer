@@ -40,8 +40,8 @@ use tool_importer\local\exceptions\importer_exception;
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class data_source implements Iterator, data_processor_interface {
-    use data_processor_impl;
+abstract class data_source implements Iterator, data_processor_mgmt_interface {
+    use data_processor_mgmt_impl;
     /**
      * Iterator is valid
      *

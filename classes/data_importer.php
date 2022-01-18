@@ -33,8 +33,8 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class data_importer implements data_processor_interface {
-    use data_processor_impl;
+abstract class data_importer implements data_processor_mgmt_interface {
+    use data_processor_mgmt_impl;
     /**
      * @var array
      */
@@ -103,8 +103,8 @@ abstract class data_importer implements data_processor_interface {
      *
      * @param array $row
      * @param mixed $data
-     * @param mixed|null $options import options
      * @param int $rowindex
+     * @param mixed|null $options import options
      */
     public function after_row_imported($row, $data, $rowindex, $options = null) {
         // Nothing for now but can be overridden.
@@ -187,7 +187,7 @@ abstract class data_importer implements data_processor_interface {
      *
      * @param array $row
      * @param int $rowindex
-     * @throws validation_exception
+     * @param mixed $options
      */
     public function validate_after_transform($row, $rowindex, $options = null) {
     }
@@ -200,6 +200,7 @@ abstract class data_importer implements data_processor_interface {
      *
      * @param array $row
      * @param int $rowindex
+     * @param mixed $options
      */
     public function fix_before_transform(&$row, $rowindex, $options = null) {
     }
