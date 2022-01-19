@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Data Importer';
-$string['process:progress'] = 'Processing import';
-$string['log:level:warning'] = 'Warning';
-$string['log:level:error'] = 'Error';
+$string['pluginname'] = 'Importation de données';
+$string['process:progress'] = 'Importation en cours';
+$string['log:level:warning'] = 'Alert';
+$string['log:level:error'] = 'Erreur';
 $string['log:level:info'] = 'Info';
-$string['importlog:message']  = '{$a->level} (Line {$a->line}, Field:{$a->fieldname}): {$a->message}';
-$string['columnmissing'] = 'Column missing';
-$string['csvimporteriniterror'] = 'Intial importer error ({$a}).';
+$string['importlog:message']  = '{$a->level} (Ligne {$a->line}, Champ:{$a->fieldname}): {$a->message}';
+$string['columnmissing'] = 'Colonne manquante';
+$string['csvimporteriniterror'] = 'Erreur initiale d\'importation ({$a}).';
