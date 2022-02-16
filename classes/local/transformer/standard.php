@@ -95,6 +95,9 @@ class standard extends data_transformer {
                 ksort($fieldvalues);
                 $result = "";
                 foreach ($fieldvalues as $order => $val) {
+                    if (empty(trim($val))) {
+                        continue;
+                    }
                     if (!empty($result)) {
                         $separator = (isset($separators[$fieldname]) && isset($separators[$fieldname][$order])) ?
                             $separators[$fieldname][$order] : $this->concatseparator;
