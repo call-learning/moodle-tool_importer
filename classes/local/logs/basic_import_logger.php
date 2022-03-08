@@ -21,8 +21,6 @@ use stdClass;
 use tool_importer\local\log_levels;
 use tool_importer\processor;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class import logger
  *
@@ -65,10 +63,10 @@ class basic_import_logger implements import_logger {
         $importloginfo->importid = $overrides['importid'];
         $additionalinfo = $e->a ?? '';
         $hasdebugdeveloper = (
-            isset($CFG->debugdisplay) &&
-            isset($CFG->debug) &&
-            $CFG->debugdisplay &&
-            $CFG->debug === DEBUG_DEVELOPER
+                isset($CFG->debugdisplay) &&
+                isset($CFG->debug) &&
+                $CFG->debugdisplay &&
+                $CFG->debug === DEBUG_DEVELOPER
         );
         if ($hasdebugdeveloper) {
             $info = get_exception_info($e);

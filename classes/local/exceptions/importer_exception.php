@@ -16,9 +16,8 @@
 
 namespace tool_importer\local\exceptions;
 
+use moodle_exception;
 use tool_importer\local\log_levels;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Data importer exception.
@@ -31,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class importer_exception extends \moodle_exception {
+class importer_exception extends moodle_exception {
     /**
      * @var int $level information about the validation issue
      */
@@ -59,12 +58,12 @@ class importer_exception extends \moodle_exception {
      * @param null $debuginfo
      */
     public function __construct($messagecode,
-        $rowindex,
-        $fieldname = '',
-        $module = 'tool_importer',
-        $additionalinfo = null,
-        $level = log_levels::LEVEL_WARNING,
-        $debuginfo = null) {
+            $rowindex,
+            $fieldname = '',
+            $module = 'tool_importer',
+            $additionalinfo = null,
+            $level = log_levels::LEVEL_WARNING,
+            $debuginfo = null) {
         $this->linenumber = $rowindex + 2; // We take into account the header and the fact we start at index 0, although this
         // make more sense to start row index at 1.
         $this->level = $level;

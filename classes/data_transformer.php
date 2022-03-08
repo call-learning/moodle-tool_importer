@@ -24,10 +24,7 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace tool_importer;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class data_transformer

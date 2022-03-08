@@ -24,9 +24,7 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace tool_importer;
-defined('MOODLE_INTERNAL') || die();
 
 use Iterator;
 use tool_importer\local\exceptions\importer_exception;
@@ -76,6 +74,16 @@ abstract class data_source implements Iterator, data_processor_mgmt_interface {
      * @return array
      */
     abstract public function get_fields_definition();
+
+    /**
+     * Give a chance to the source to initalise fields before creating the field definition
+     *
+     * @param array $csvheaders
+     * @return void
+     */
+    protected function setup_fields_before_defintion(array $csvheaders) {
+        // Nothing for now.
+    }
 
     /**
      * Get the total number of records

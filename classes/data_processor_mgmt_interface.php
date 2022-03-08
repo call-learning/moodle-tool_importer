@@ -23,8 +23,6 @@
 
 namespace tool_importer;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data processor class.
  *

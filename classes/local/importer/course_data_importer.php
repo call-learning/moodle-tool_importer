@@ -15,15 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace tool_importer\local\importer;
-
-
 use tool_importer\data_importer;
 use tool_importer\data_source;
 use tool_importer\field_types;
 use tool_importer\local\utils;
 use tool_importer\task\course_restore_task;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * CSV Data source for courses

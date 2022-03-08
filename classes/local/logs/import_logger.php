@@ -20,9 +20,13 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_importer\local\logs;
 
+use coding_exception;
+use core\invalid_persistent_exception;
 use core\persistent;
+use moodle_exception;
 use tool_importer\local\log_levels;
 use tool_importer\processor;
 
@@ -37,18 +41,18 @@ interface import_logger {
     /**
      * From generic exception
      *
-     * @param \moodle_exception $e
+     * @param moodle_exception $e
      * @param array $overrides contains at least the values for importid, level and module
      * @return import_log_entity
      */
-    public function log_from_exception(\moodle_exception $e, array $overrides);
+    public function log_from_exception(moodle_exception $e, array $overrides);
 
     /**
      * Get logs from filters
      *
      * @param array $filters
      * @return persistent[]
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function get_logs($filters = []);
 
@@ -56,7 +60,7 @@ interface import_logger {
      * Get related persistent class
      *
      * @return string
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function get_log_persistent_class();
 
@@ -72,8 +76,8 @@ interface import_logger {
      * @param mixed $additionalinfo
      * @param int $level
      * @return string|void
-     * @throws \coding_exception
-     * @throws \core\invalid_persistent_exception
+     * @throws coding_exception
+     * @throws invalid_persistent_exception
      */
     public function create_log($linenumber, $messagecode, $fieldname, processor $processor, $additionalinfo = '',
             $level = log_levels::LEVEL_WARNING);

@@ -20,8 +20,6 @@ use tool_importer\local\exceptions\importer_exception;
 use tool_importer\local\exceptions\validation_exception;
 use tool_importer\local\log_levels;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data importer class.
  *

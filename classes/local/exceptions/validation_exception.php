@@ -16,8 +16,6 @@
 
 namespace tool_importer\local\exceptions;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data validation exception.
  *
