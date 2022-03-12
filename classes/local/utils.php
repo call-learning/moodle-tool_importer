@@ -17,7 +17,6 @@
 namespace tool_importer\local;
 
 use core_text;
-use tool_importer\data_source;
 
 /**
  * Local utils function for import routines and other.
@@ -27,16 +26,6 @@ use tool_importer\data_source;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class utils {
-    /**
-     * Remove accentuated character from a given string
-     *
-     * @param string $input
-     * @return string
-     */
-    public static function translate_ascii($input) {
-        return core_text::convert($input, 'utf-8', 'ascii');
-    }
-
     /**
      * Compare two strings without space, on a lower case basis and without accentuated chars
      *
@@ -48,5 +37,15 @@ class utils {
         $s1 = str_replace(' ', '', static::translate_ascii($s1));
         $s2 = str_replace(' ', '', static::translate_ascii($s2));
         return strcasecmp($s1, $s2);
+    }
+
+    /**
+     * Remove accentuated character from a given string
+     *
+     * @param string $input
+     * @return string
+     */
+    public static function translate_ascii($input) {
+        return core_text::convert($input, 'utf-8', 'ascii');
     }
 }

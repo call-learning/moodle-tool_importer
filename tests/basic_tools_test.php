@@ -21,8 +21,12 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-use tool_importer\field_types;
-use tool_importer\processor;
+namespace tool_importer;
+use advanced_testcase;
+use inmemory_data_source;
+use inmemory_importer;
+use minimal_transformer;
+use tool_importer\local\exceptions\importer_exception;
 use tool_importer\local\transformer\standard;
 
 defined('MOODLE_INTERNAL') || die();
@@ -30,6 +34,63 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/admin/tool/importer/tests/lib.php');
 
+/**
+ * Basic data importer class
+ *
+ */
+class basic_tools_importer_class  extends \tool_importer\data_importer {
+    /**
+     * @var array $importedrows locally imported rows
+     */
+    protected $importedrows = [];
+    /**
+     * Get field definition
+     *
+     * @return array[]
+     */
+    public function get_fields_definition() {
+        return basic_tools_test::FIELD_DEFINITION;
+    }
+    /**
+     * Raw import
+     *
+     * @param array $row
+     * @param int $rowindex
+     * @param mixed $options
+     * @return void
+     */
+    protected function raw_import($row, $rowindex, $options = null) {
+        $this->importedrows[$rowindex] = $row;
+        // Do nothing.
+    }
+
+    /**
+     * Get imported data
+     *
+     * @return array
+     */
+    public function get_imported_data() {
+        return $this->importedrows;
+    }
+}
+
+/**
+ * Test importer class
+ *
+ * @package     tool_importer
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class basic_tools_data_source extends \tool_importer\local\source\csv_data_source {
+    /**
+     * Get field definition
+     *
+     * @return array[]
+     */
+    public function get_fields_definition() {
+        return basic_tools_test::FIELD_DEFINITION;
+    }
+}
 /**
  * Test for basic tools
  *
@@ -229,7 +290,7 @@ class basic_tools_test extends advanced_testcase {
                 'filename' => 'csv_sample2_wrong_encoding.csv',
                 'results' => [
                     'isvalid' => false,
-                    'exception' => tool_importer\local\exceptions\importer_exception::class
+                    'exception' => importer_exception::class
                 ],
                 'errors' => [
                     [
@@ -256,7 +317,7 @@ class basic_tools_test extends advanced_testcase {
                 'filename' => 'csv_sample4_colmissing.csv',
                 'results' => [
                     'isvalid' => false,
-                    'exception' => tool_importer\local\exceptions\importer_exception::class
+                    'exception' => importer_exception::class
                 ],
                 'errors' => [
                     [
@@ -291,7 +352,7 @@ class basic_tools_test extends advanced_testcase {
                 'filename' => 'randomname.csv',
                 'results' => [
                     'isvalid' => false,
-                    'exception' => tool_importer\local\exceptions\importer_exception::class
+                    'exception' => importer_exception::class
                 ],
                 'errors' => [
                     [
@@ -333,58 +394,16 @@ class basic_tools_test extends advanced_testcase {
      */
     protected function create_processor_from_params($filename) {
         global $CFG;
-        $csvimporter = new class(
-            $CFG->dirroot . '/admin/tool/importer/tests/fixtures/' . $filename)
-            extends \tool_importer\local\source\csv_data_source {
-            /**
-             * Get field definition
-             *
-             * @return array[]
-             */
-            public function get_fields_definition() {
-                return basic_tools_test::FIELD_DEFINITION;
-            }
-        };
+        $csvimporter = new basic_tools_data_source(
+            $CFG->dirroot . '/admin/tool/importer/tests/fixtures/' . $filename);
         $transformer = new standard([]);
 
-        $importer = new processor($csvimporter,
+        return new processor($csvimporter,
             $transformer,
-            new class($csvimporter) extends \tool_importer\data_importer {
-                protected $importedrows = [];
-                /**
-                 * Get field definition
-                 *
-                 * @return array[]
-                 */
-                public function get_fields_definition() {
-                    return basic_tools_test::FIELD_DEFINITION;
-                }
-                /**
-                 * Raw import
-                 *
-                 * @param array $row
-                 * @param int $rowindex
-                 * @param mixed $options
-                 * @return void
-                 */
-                protected function raw_import($row, $rowindex, $options = null) {
-                    $this->importedrows[$rowindex] = $row;
-                    // Do nothing.
-                }
-
-                /**
-                 * Get imported data
-                 *
-                 * @return array
-                 */
-                public function get_imported_data() {
-                    return $this->importedrows;
-                }
-            },
+            new basic_tools_importer_class($csvimporter),
             null,
             50
         );
-        return $importer;
     }
 
 }

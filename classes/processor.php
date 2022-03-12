@@ -25,9 +25,11 @@
  */
 
 namespace tool_importer;
-defined('MOODLE_INTERNAL') || die();
 
+use coding_exception;
 use core\persistent;
+use dml_exception;
+use moodle_exception;
 use progress_bar;
 use text_progress_trace;
 use tool_importer\local\logs\basic_import_logger;
@@ -74,6 +76,11 @@ class processor {
     private $importexternalid = 0;
 
     /**
+     * @var basic_import_logger $importlogger
+     */
+    private $importlogger = null;
+
+    /**
      * Importer constructor.
      *
      * @param data_source $source
@@ -85,13 +92,13 @@ class processor {
      * @param string $module
      */
     public function __construct(
-        data_source $source,
-        data_transformer $transformer,
-        data_importer $importer,
-        $progressbar = null,
-        $importid = 0,
-        $importlogger = null,
-        $module = 'tool_importer'
+            data_source $source,
+            data_transformer $transformer,
+            data_importer $importer,
+            $progressbar = null,
+            $importid = 0,
+            $importlogger = null,
+            $module = 'tool_importer'
     ) {
         $this->importexternalid = $importid;
         $this->source = $source;
@@ -120,37 +127,6 @@ class processor {
     }
 
     /**
-     * Validate the rows.
-     *
-     * @param mixed $options
-     *
-     * The validation log is purged before we start the validation process
-     * TODO: deal with concurrency.
-     *
-     * @return bool true when valid, false when invalid
-     */
-    public function validate($options = null) {
-        $this->purge_validation_logs();
-        $this->importer->set_validation_mode();
-        try {
-            $haserrors = $this->do_import($options);
-            $this->source->rewind();
-        } catch (\moodle_exception $e) {
-            $log = $this->importlogger->log_from_exception($e, [
-                'linenumber' => 0,
-                'module' => $this->module,
-                'origin' => $this->source->get_origin(),
-                'importid' => $this->importer->get_import_id()
-            ]);
-            $log->set('validationstep', !$this->importer->is_import_mode());
-            $log->create();
-            $haserrors = true;
-        }
-
-        return !$haserrors;
-    }
-
-    /**
      * Real Import routine
      *
      * @param mixed $options
@@ -174,13 +150,13 @@ class processor {
                 $this->importer->import_row($transformedrow, $rowindex, $options);
                 $this->increment_row_imported();
                 $this->update_progress_bar($this->rowimported);
-            } catch (\moodle_exception $e) {
+            } catch (moodle_exception $e) {
                 $haserrors = true;
                 $log = $this->importlogger->log_from_exception($e, [
-                    'linenumber' => $rowindex,
-                    'module' => $this->module,
-                    'origin' => $this->source->get_origin(),
-                    'importid' => $this->importer->get_import_id()
+                        'linenumber' => $rowindex,
+                        'module' => $this->module,
+                        'origin' => $this->source->get_origin(),
+                        'importid' => $this->importer->get_import_id()
                 ]);
                 $log->set('validationstep', !$this->importer->is_import_mode());
                 $log->create();
@@ -193,15 +169,89 @@ class processor {
     }
 
     /**
+     * Reset row imported count
+     *
+     * @return void
+     */
+    protected function reset_row_imported() {
+        if ($this->importer->is_import_mode()) {
+            $this->rowimported = 0;
+        }
+    }
+
+    /**
+     * Increment row count
+     *
+     * @return void
+     */
+    protected function increment_row_imported() {
+        if ($this->importer->is_import_mode()) {
+            $this->rowimported++;
+        }
+    }
+
+    /**
+     * Update progressbar
+     *
+     * @param int $rowindex
+     * @throws coding_exception
+     */
+    protected function update_progress_bar($rowindex) {
+        $rowcount = $this->source->get_total_row_count();
+        if ($this->progressbar && $this->importer->is_import_mode()) {
+            if ($this->progressbar instanceof progress_bar) {
+                $this->progressbar->update(
+                        $rowindex,
+                        $rowcount,
+                        get_string('process:progress', 'tool_importer'));
+            }
+            if ($this->progressbar instanceof text_progress_trace) {
+                $this->progressbar->output("$rowindex/$rowcount");
+            }
+        }
+    }
+
+    /**
+     * Validate the rows.
+     *
+     * @param mixed $options
+     *
+     * The validation log is purged before we start the validation process
+     * TODO: deal with concurrency.
+     *
+     * @return bool true when valid, false when invalid
+     */
+    public function validate($options = null) {
+        $this->purge_validation_logs();
+        $this->importer->set_validation_mode();
+        try {
+            $haserrors = $this->do_import($options);
+            $this->source->rewind();
+        } catch (moodle_exception $e) {
+            $log = $this->importlogger->log_from_exception($e, [
+                    'linenumber' => 0,
+                    'module' => $this->module,
+                    'origin' => $this->source->get_origin(),
+                    'importid' => $this->importer->get_import_id()
+            ]);
+            $log->set('validationstep', !$this->importer->is_import_mode());
+            $log->create();
+            $haserrors = true;
+        }
+
+        return !$haserrors;
+    }
+
+    /**
      * Purge validation log.
      *
      * Called automatically when we validate an import
      *
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     public function purge_validation_logs() {
         $allvalidationlogs = $this->importlogger->get_logs(['validationstep' => 1,
-            'importid' => $this->importer->get_import_id()]);
+                'importid' => $this->importer->get_import_id()]);
         foreach ($allvalidationlogs as $log) {
             $log->delete();
         }
@@ -214,28 +264,7 @@ class processor {
      */
     public function get_validation_log() {
         return $this->importlogger->get_logs(['validationstep' => 1,
-            'importid' => $this->importer->get_import_id()]);
-    }
-
-    /**
-     * Update progressbar
-     *
-     * @param int $rowindex
-     * @throws \coding_exception
-     */
-    protected function update_progress_bar($rowindex) {
-        $rowcount = $this->source->get_total_row_count();
-        if ($this->progressbar && $this->importer->is_import_mode()) {
-            if ($this->progressbar instanceof progress_bar) {
-                $this->progressbar->update(
-                    $rowindex,
-                    $rowcount,
-                    get_string('process:progress', 'tool_importer'));
-            }
-            if ($this->progressbar instanceof text_progress_trace) {
-                $this->progressbar->output("$rowindex/$rowcount");
-            }
-        }
+                'importid' => $this->importer->get_import_id()]);
     }
 
     /**
@@ -258,41 +287,11 @@ class processor {
 
     /**
      * Get statistics in a displayable (HTML) format
+     *
      * @return string
      */
     public function get_displayable_stats() {
         return '';
-    }
-
-    /**
-     * Get total rows
-     *
-     * @return mixed
-     */
-    protected function increment_row_imported() {
-        if ($this->importer->is_import_mode()) {
-            $this->rowimported++;
-        }
-    }
-
-    /**
-     * Get total rows
-     *
-     * @return mixed
-     */
-    protected function reset_row_imported() {
-        if ($this->importer->is_import_mode()) {
-            $this->rowimported = 0;
-        }
-    }
-
-    /**
-     * Set related module
-     *
-     * @param string $modulename
-     */
-    public function set_module($modulename = 'tool_importer') {
-        $this->module = $modulename;
     }
 
     /**
@@ -302,6 +301,15 @@ class processor {
      */
     public function get_module() {
         return $this->module;
+    }
+
+    /**
+     * Set related module
+     *
+     * @param string $modulename
+     */
+    public function set_module($modulename = 'tool_importer') {
+        $this->module = $modulename;
     }
 
     /**

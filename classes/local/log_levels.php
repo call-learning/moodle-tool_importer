@@ -24,7 +24,8 @@
 
 namespace tool_importer\local;
 
-defined('MOODLE_INTERNAL') || die();
+use coding_exception;
+use lang_string;
 
 /**
  * Class log_levels
@@ -51,9 +52,9 @@ class log_levels {
      * Match for level and short name
      */
     const LEVEL_TO_SN = [
-        self::LEVEL_INFO => 'none',
-        self::LEVEL_ERROR => 'error',
-        self::LEVEL_WARNING => 'warning'
+            self::LEVEL_INFO => 'none',
+            self::LEVEL_ERROR => 'error',
+            self::LEVEL_WARNING => 'warning'
     ];
 
     /**
@@ -73,11 +74,11 @@ class log_levels {
      *
      * @param int $level
      * @param string $module
-     * @return \lang_string|string
-     * @throws \coding_exception
+     * @return lang_string|string
+     * @throws coding_exception
      */
     public static function to_displayable_string(int $level, $module = 'tool_importer') {
         $levelsn = self::LEVEL_TO_SN[$level] ?? '';
-        return get_string('log:level:'.$levelsn, $module);
+        return get_string('log:level:' . $levelsn, $module);
     }
 }

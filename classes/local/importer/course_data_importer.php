@@ -16,14 +16,14 @@
 
 namespace tool_importer\local\importer;
 
-
+use core\task\manager;
+use core_course\customfield\course_handler;
+use dml_exception;
+use moodle_exception;
 use tool_importer\data_importer;
-use tool_importer\data_source;
 use tool_importer\field_types;
 use tool_importer\local\utils;
 use tool_importer\task\course_restore_task;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * CSV Data source for courses
@@ -48,25 +48,84 @@ class course_data_importer extends data_importer {
      *
      * @param mixed $defaultvals additional default values
      * @param string $customfieldsprefix
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     public function __construct($defaultvals = null, $customfieldsprefix = "cf_") {
         global $DB;
         $defaultcategory = $DB->get_field_select('course_categories', "MIN(id)", "parent=0");
         $this->defaultvalues = [
-            'idnumber' => '',
-            'format' => 'topics',
-            'newsitems' => 0,
-            'numsections' => 5,
-            'summary' => '',
-            'summaryformat' => FORMAT_HTML,
-            'category' => $defaultcategory,
-            'startdate' => usergetmidnight(time())
+                'idnumber' => '',
+                'format' => 'topics',
+                'newsitems' => 0,
+                'numsections' => 5,
+                'summary' => '',
+                'summaryformat' => FORMAT_HTML,
+                'category' => $defaultcategory,
+                'startdate' => usergetmidnight(time())
         ];
         if ($defaultvals) {
             $this->defaultvalues = array_merge($this->defaultvalues, $defaultvals);
         }
         $this->cfprefix = $customfieldsprefix;
+    }
+
+    /**
+     * Check if row is valid before transformation.
+     *
+     *
+     * @param array $row
+     * @param int $rowindex
+     * @param mixed|null $options import options
+     * @throws validation_exception
+     */
+    public function validate_after_transform($row, $rowindex, $options = null) {
+        $transformedfields = [
+                'fullname' => [
+                        'type' => field_types::TYPE_TEXT,
+                        'required' => true
+                ],
+                'shortname' => [
+                        'type' => field_types::TYPE_TEXT,
+                        'required' => false
+                ],
+                'idnumber' => [
+                        'type' => field_types::TYPE_TEXT,
+                        'required' => false
+                ],
+                'format' => [
+                        'type' => field_types::TYPE_TEXT,
+                        'required' => false
+                ],
+                'newsitems' => [
+                        'type' => field_types::TYPE_INT,
+                        'required' => false
+                ],
+                'numsections' => [
+                        'type' => field_types::TYPE_INT,
+                        'required' => false
+                ],
+                'summary' => [
+                        'type' => field_types::TYPE_TEXT,
+                        'required' => false
+                ],
+                'summaryformat' => [
+                        'type' => field_types::TYPE_INT,
+                        'required' => false
+                ],
+                'category' => [
+                        'type' => field_types::TYPE_INT,
+                        'required' => false
+                ],
+                'startdate' => [
+                        'type' => field_types::TYPE_INT,
+                        'required' => false
+                ],
+                'templatecourseidnumber' => [
+                        'type' => field_types::TYPE_TEXT,
+                        'required' => false
+                ]
+        ];
+        $this->validate_from_field_definition($transformedfields, $row, $rowindex);
     }
 
     /**
@@ -81,7 +140,7 @@ class course_data_importer extends data_importer {
     protected function raw_import($row, $rowindex, $options = null) {
         global $DB;
         $existingcourse = !empty($row['idnumber']) && (
-            $DB->record_exists('course', array('idnumber' => $row['idnumber'])));
+                $DB->record_exists('course', array('idnumber' => $row['idnumber'])));
         $course = null;
         if ($existingcourse) {
             $course = $DB->get_record('course', array('idnumber' => $row['idnumber']));
@@ -91,7 +150,7 @@ class course_data_importer extends data_importer {
         }
 
         // Now the customfields.
-        $handler = \core_course\customfield\course_handler::create($course->id);
+        $handler = course_handler::create($course->id);
         $coursedatafields = $handler->get_instance_data($course->id, true);
         $context = $handler->get_instance_context($course->id);
         foreach ($row as $col => $value) {
@@ -126,87 +185,12 @@ class course_data_importer extends data_importer {
     }
 
     /**
-     * Check if row is valid before transformation.
-     *
-     *
-     * @param array $row
-     * @param int $rowindex
-     * @param mixed|null $options import options
-     * @throws validation_exception
-     */
-    public function validate_after_transform($row, $rowindex, $options = null) {
-        $transformedfields = [
-            'fullname' => [
-                'type' => field_types::TYPE_TEXT,
-                'required' => true
-            ],
-            'shortname' => [
-                'type' => field_types::TYPE_TEXT,
-                'required' => false
-            ],
-            'idnumber' => [
-                'type' => field_types::TYPE_TEXT,
-                'required' => false
-            ],
-            'format' => [
-                'type' => field_types::TYPE_TEXT,
-                'required' => false
-            ],
-            'newsitems' => [
-                'type' => field_types::TYPE_INT,
-                'required' => false
-            ],
-            'numsections' => [
-                'type' => field_types::TYPE_INT,
-                'required' => false
-            ],
-            'summary' => [
-                'type' => field_types::TYPE_TEXT,
-                'required' => false
-            ],
-            'summaryformat' => [
-                'type' => field_types::TYPE_INT,
-                'required' => false
-            ],
-            'category' => [
-                'type' => field_types::TYPE_INT,
-                'required' => false
-            ],
-            'startdate' => [
-                'type' => field_types::TYPE_INT,
-                'required' => false
-            ],
-            'templatecourseidnumber' => [
-                'type' => field_types::TYPE_TEXT,
-                'required' => false
-            ]
-        ];
-        $this->validate_from_field_definition($transformedfields, $row, $rowindex);
-    }
-
-    /**
-     * Create course
-     *
-     * @param object $record
-     * @return object $course
-     * @throws \moodle_exception
-     */
-    protected function create_course($record) {
-        global $CFG, $DB;
-        require_once("$CFG->dirroot/course/lib.php");
-        $this->set_default_values($record);
-        $course = create_course((object) $record);
-        $this->restore_from_template_course($record, $course);
-        return $course;
-    }
-
-    /**
      * Update existing course
      *
      * @param object $record
      * @param object $existingrecord
      * @return object $course
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function update_course($record, $existingrecord) {
         global $CFG;
@@ -222,12 +206,12 @@ class course_data_importer extends data_importer {
      * Set default values for record
      *
      * @param object $record
-     * @throws \dml_exception
+     * @throws dml_exception
      */
     protected function set_default_values(&$record) {
         $defaults = $this->defaultvalues;
         $defaults['shortname'] = empty($record['fullname']) ? '' :
-            strtoupper(preg_replace('/[\s\W]+/', '', $record['fullname']));
+                strtoupper(preg_replace('/[\s\W]+/', '', $record['fullname']));
         $record = array_merge($defaults, $record);
     }
 
@@ -236,7 +220,7 @@ class course_data_importer extends data_importer {
      *
      * @param object $record
      * @param object $course
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     protected function restore_from_template_course($record, $course) {
         global $DB, $CFG;
@@ -247,13 +231,29 @@ class course_data_importer extends data_importer {
             if ($templatecourse) {
                 $courserestoretask = new course_restore_task();
                 $courserestoretask->set_custom_data(array(
-                    'templatecourseid' => $templatecourse->id,
-                    'courseid' => $course->id
+                        'templatecourseid' => $templatecourse->id,
+                        'courseid' => $course->id
                 ));
                 $courserestoretask->set_userid(get_admin()->id);
-                \core\task\manager::queue_adhoc_task($courserestoretask);
+                manager::queue_adhoc_task($courserestoretask);
             }
         }
+    }
+
+    /**
+     * Create course
+     *
+     * @param object $record
+     * @return object $course
+     * @throws moodle_exception
+     */
+    protected function create_course($record) {
+        global $CFG, $DB;
+        require_once("$CFG->dirroot/course/lib.php");
+        $this->set_default_values($record);
+        $course = create_course((object) $record);
+        $this->restore_from_template_course($record, $course);
+        return $course;
     }
 
 }

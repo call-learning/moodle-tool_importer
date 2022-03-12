@@ -15,7 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace tool_importer;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Plugin version and other meta-data are defined here.
@@ -24,7 +23,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class field_types  {
+class field_types {
     /**
      * Type INT / Numeric
      */
@@ -42,11 +41,12 @@ class field_types  {
      * @return bool
      */
     public static function is_valid($value, $type) {
-        switch($type) {
+        switch ($type) {
             case self::TYPE_INT:
                 return is_numeric($value);
             case self::TYPE_TEXT:
                 return is_string($value);
         }
+        return true;
     }
 }

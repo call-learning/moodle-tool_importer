@@ -20,8 +20,8 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_importer;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Data processor implementation class.
@@ -41,15 +41,6 @@ trait data_processor_mgmt_impl {
     private $processor;
 
     /**
-     * Set processor
-     *
-     * @param processor $processor
-     */
-    public function set_processor(processor $processor) {
-        $this->processor = $processor;
-    }
-
-    /**
      * Get import identifier
      *
      * @return processor
@@ -58,6 +49,14 @@ trait data_processor_mgmt_impl {
         return $this->processor;
     }
 
+    /**
+     * Set processor
+     *
+     * @param processor $processor
+     */
+    public function set_processor(processor $processor) {
+        $this->processor = $processor;
+    }
 
     /**
      * Get import identifier
@@ -88,6 +87,7 @@ trait data_processor_mgmt_impl {
     public function get_importer() {
         return empty($this->processor) ? null : $this->processor->get_importer();
     }
+
     /**
      * Get related data logger
      */

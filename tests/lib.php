@@ -28,8 +28,6 @@ use tool_importer\data_transformer;
 
 defined('MOODLE_INTERNAL') || die();
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class inmemory_data_source
  *

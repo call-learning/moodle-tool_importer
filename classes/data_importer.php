@@ -20,8 +20,6 @@ use tool_importer\local\exceptions\importer_exception;
 use tool_importer\local\exceptions\validation_exception;
 use tool_importer\local\log_levels;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data importer class.
  *
@@ -35,6 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 abstract class data_importer implements data_processor_mgmt_interface {
     use data_processor_mgmt_impl;
+
     /**
      * @var array
      */
@@ -49,9 +48,11 @@ abstract class data_importer implements data_processor_mgmt_interface {
 
     /**
      * Current validation mode: false => do the real import, true => just validate
+     *
      * @var bool
      */
     protected $validationmode = false;
+
     /**
      * data_importer constructor.
      *
@@ -60,10 +61,12 @@ abstract class data_importer implements data_processor_mgmt_interface {
     public function __construct($defaultvals = []) {
         $this->defaultvalues = $defaultvals;
     }
+
     /**
      * Called just before importation or validation.
      *
      * Gives a chance to reinit values or local information before a real import.
+     *
      * @param mixed|null $options additional importer options
      */
     public function init($options = null) {
@@ -71,16 +74,25 @@ abstract class data_importer implements data_processor_mgmt_interface {
     }
 
     /**
-     * Get the field definition array
+     * Do the real import (in the persistent state/database)
      *
-     * The associative array has at least a series of column names
-     * Types are derived from the field_types class
-     * 'fieldname' => [ 'type' => TYPE_XXX, ...]
-     *
-     * @return array
+     * @param array $row
+     * @param int $rowindex
+     * @param mixed|null $options import options
+     * @return void
      */
-    public function get_fields_definition() {
-        return $this->get_source()->get_fields_definition();
+    public function import_row($row, $rowindex, $options = null) {
+        if ($this->is_import_mode()) {
+            $data = $this->raw_import($row, $rowindex, $options);
+            $this->after_row_imported($row, $data, $rowindex, $options);
+        }
+    }
+
+    /**
+     * Is this importer in import or validation mode
+     */
+    public function is_import_mode() {
+        return !$this->validationmode;
     }
 
     /**
@@ -91,12 +103,7 @@ abstract class data_importer implements data_processor_mgmt_interface {
      * @param mixed|null $options import options
      * @return mixed
      */
-    public function import_row($row, $rowindex, $options = null) {
-        if ($this->is_import_mode()) {
-            $data = $this->raw_import($row, $rowindex, $options);
-            $this->after_row_imported($row, $data, $rowindex, $options);
-        }
-    }
+    abstract protected function raw_import($row, $rowindex, $options = null);
 
     /**
      * Callback after each row is imported.
@@ -109,16 +116,6 @@ abstract class data_importer implements data_processor_mgmt_interface {
     public function after_row_imported($row, $data, $rowindex, $options = null) {
         // Nothing for now but can be overridden.
     }
-
-    /**
-     * Do the real import (in the persistent state/database)
-     *
-     * @param array $row
-     * @param int $rowindex
-     * @param mixed|null $options import options
-     * @return mixed
-     */
-    abstract protected function raw_import($row, $rowindex, $options = null);
 
     /**
      * Check if row is valid before transformation.
@@ -149,36 +146,49 @@ abstract class data_importer implements data_processor_mgmt_interface {
         foreach ($fielddefinitionlist as $fieldname => $value) {
             if (empty($value['type'])) {
                 throw new validation_exception('typenotspecified',
-                    $rowindex,
-                    $fieldname,
-                    $this->module,
-                    '',
-                    log_levels::LEVEL_ERROR
+                        $rowindex,
+                        $fieldname,
+                        $this->module,
+                        '',
+                        log_levels::LEVEL_ERROR
                 );
             }
             $type = $value['type'];
-            $required = empty($value['required']) ? false : $value['required'];
+            $required = !empty($value['required']) && $value['required'];
             if ($required && !isset($row[$fieldname])) {
                 throw new validation_exception('required',
-                    $rowindex,
-                    $fieldname,
-                    $this->module,
-                    '',
-                    log_levels::LEVEL_ERROR
+                        $rowindex,
+                        $fieldname,
+                        $this->module,
+                        '',
+                        log_levels::LEVEL_ERROR
                 );
             } else if (!isset($row[$fieldname])) {
                 continue;
             }
             if (!field_types::is_valid($row[$fieldname], $type)) {
                 throw new validation_exception('wrongtype',
-                    $rowindex,
-                    $fieldname,
-                    $this->module,
-                    '',
-                    log_levels::LEVEL_ERROR
+                        $rowindex,
+                        $fieldname,
+                        $this->module,
+                        '',
+                        log_levels::LEVEL_ERROR
                 );
             }
         }
+    }
+
+    /**
+     * Get the field definition array
+     *
+     * The associative array has at least a series of column names
+     * Types are derived from the field_types class
+     * 'fieldname' => [ 'type' => TYPE_XXX, ...]
+     *
+     * @return array
+     */
+    public function get_fields_definition() {
+        return $this->get_source()->get_fields_definition();
     }
 
     /**
@@ -193,9 +203,9 @@ abstract class data_importer implements data_processor_mgmt_interface {
     }
 
     /**
-     * Check if row is valid before we transform it
-     * It will also change the value
+     * Check if row is valid before we transform it.
      *
+     * It might also change the value.
      * This helps to catch errors before we try to transform the row.
      *
      * @param array $row
@@ -217,6 +227,7 @@ abstract class data_importer implements data_processor_mgmt_interface {
 
     /**
      * Make sure the fields validate correctly
+     *
      * @param array $row
      * @throws importer_exception
      */
@@ -230,18 +241,12 @@ abstract class data_importer implements data_processor_mgmt_interface {
     public function set_validation_mode() {
         $this->validationmode = true;
     }
+
     /**
      * Set the importer in import mode. Real import will be done.
      */
     public function set_import_mode() {
         $this->validationmode = false;
-    }
-
-    /**
-     * Is this importer in import or validation mode
-     */
-    public function is_import_mode() {
-        return !$this->validationmode;
     }
 
 }

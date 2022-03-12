@@ -16,12 +16,13 @@
 
 namespace tool_importer\local\logs;
 
+use coding_exception;
+use core\invalid_persistent_exception;
 use core\persistent;
+use moodle_exception;
 use stdClass;
 use tool_importer\local\log_levels;
 use tool_importer\processor;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class import logger
@@ -36,7 +37,7 @@ class basic_import_logger implements import_logger {
      *
      * @param int $logid identifier of the log
      * @return string
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function get_full_message($logid) {
         $importlog = import_log_entity::get_record(['id' => $logid]);
@@ -49,11 +50,11 @@ class basic_import_logger implements import_logger {
     /**
      * From generic exception
      *
-     * @param \moodle_exception $e
+     * @param moodle_exception $e
      * @param array $overrides contains at least the values for importid, level and module
      * @return import_log_entity
      */
-    public function log_from_exception(\moodle_exception $e, array $overrides) {
+    public function log_from_exception(moodle_exception $e, array $overrides) {
         global $CFG;
         $importloginfo = new stdClass();
         $importloginfo->messagecode = $e->errorcode;
@@ -65,10 +66,10 @@ class basic_import_logger implements import_logger {
         $importloginfo->importid = $overrides['importid'];
         $additionalinfo = $e->a ?? '';
         $hasdebugdeveloper = (
-            isset($CFG->debugdisplay) &&
-            isset($CFG->debug) &&
-            $CFG->debugdisplay &&
-            $CFG->debug === DEBUG_DEVELOPER
+                isset($CFG->debugdisplay) &&
+                isset($CFG->debug) &&
+                $CFG->debugdisplay &&
+                $CFG->debug === DEBUG_DEVELOPER
         );
         if ($hasdebugdeveloper) {
             $info = get_exception_info($e);
@@ -86,7 +87,7 @@ class basic_import_logger implements import_logger {
      *
      * @param array $filters
      * @return persistent[]
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function get_logs($filters = []) {
         return import_log_entity::get_records($filters);
@@ -96,7 +97,7 @@ class basic_import_logger implements import_logger {
      * Get related persistent class
      *
      * @return string
-     * @throws \coding_exception
+     * @throws coding_exception
      */
     public function get_log_persistent_class() {
         return import_log_entity::class;
@@ -112,8 +113,8 @@ class basic_import_logger implements import_logger {
      * @param mixed $additionalinfo
      * @param int $level
      * @return string|void
-     * @throws \coding_exception
-     * @throws \core\invalid_persistent_exception
+     * @throws coding_exception
+     * @throws invalid_persistent_exception
      */
     public function create_log($linenumber, $messagecode, $fieldname, processor $processor, $additionalinfo = '',
             $level = log_levels::LEVEL_WARNING) {

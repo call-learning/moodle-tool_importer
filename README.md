@@ -3,14 +3,11 @@
 [![Test: Status](https://github.com/call-learning/moodle-tool_importer/actions/workflows/ci.yml/badge.svg)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/ci.yml)
 [![CI Tests (Linting)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/lint.yml/badge.svg)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/lint.yml)
 
-
-(Still work in progress)
-
-Generic data importer. Currently allows to import and sync course data in a more
+Generic data importer library. It will for example help to import and sync courses data in a more
 configurable way that bulk course import tool.
 
-    * Import from existing database or API (work in progress)
-    * Import from CSV
+    * Import from existing database or API
+    * Import from CSV (and some day Excel)
 
 The principle is as follow:
 
@@ -64,8 +61,6 @@ The data importer does the real job of importing the row into a Moodle entity
 (can be course or other set of tables, ...).
 For the course importer if a field starts with cf_... we will import the
 value in the matching custom field.
-
-
 
 ## License ##
 

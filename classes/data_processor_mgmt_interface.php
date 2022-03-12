@@ -23,8 +23,6 @@
 
 namespace tool_importer;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Data processor class.
  *
@@ -72,6 +70,7 @@ interface data_processor_mgmt_interface {
      * Get related data importer
      */
     public function get_importer();
+
     /**
      * Get related data importer
      */

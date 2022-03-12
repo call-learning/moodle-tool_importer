@@ -21,6 +21,7 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_importer\local\logs;
 /**
  * Interface import_log_entity_interface
@@ -31,10 +32,10 @@ namespace tool_importer\local\logs;
  */
 interface import_log_entity_interface {
     /**
-     * Get message (human readable)
+     * Get message (human-readable)
      *
-     * @package     tool_importer
      * @return string
+     * @package     tool_importer
      */
     public function get_full_message();
 }

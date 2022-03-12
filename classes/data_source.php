@@ -26,6 +26,7 @@
  */
 namespace tool_importer;
 
+use Exception;
 use Iterator;
 use tool_importer\local\exceptions\importer_exception;
 
@@ -40,6 +41,7 @@ use tool_importer\local\exceptions\importer_exception;
  */
 abstract class data_source implements Iterator, data_processor_mgmt_interface {
     use data_processor_mgmt_impl;
+
     /**
      * Iterator is valid
      *
@@ -56,6 +58,7 @@ abstract class data_source implements Iterator, data_processor_mgmt_interface {
      * Initialise the csv datasource.
      *
      * This will initialise the current source. This has to be called before we call current or rewind.
+     *
      * @param mixed|null $options additional importer options
      * @throws importer_exception
      */
@@ -93,6 +96,15 @@ abstract class data_source implements Iterator, data_processor_mgmt_interface {
     abstract public function get_total_row_count();
 
     /**
+     * Get origin
+     *
+     * @return string
+     */
+    public function get_origin() {
+        return $this->get_source_type() . ':' . $this->get_source_identifier();
+    }
+
+    /**
      * Get source type
      *
      * @return string
@@ -107,15 +119,6 @@ abstract class data_source implements Iterator, data_processor_mgmt_interface {
     abstract public function get_source_identifier();
 
     /**
-     * Get origin
-     *
-     * @return string
-     */
-    public function get_origin() {
-        return $this->get_source_type() . ':' . $this->get_source_identifier();
-    }
-
-    /**
      * Get next element and protect it from throwing an exc
      *
      * @return false|mixed
@@ -123,7 +126,7 @@ abstract class data_source implements Iterator, data_processor_mgmt_interface {
     public function next() {
         try {
             $this->currentvalue = $this->retrieve_next_value();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->isvalid = false;
         }
         return $this->currentvalue;
@@ -138,7 +141,7 @@ abstract class data_source implements Iterator, data_processor_mgmt_interface {
      * Checks if current position is valid
      *
      * @link https://php.net/manual/en/iterator.valid.php
-     * @return bool The return value will be casted to boolean and then evaluated.
+     * @return bool The return value will be cast to boolean and then evaluated.
      * Returns true on success or false on failure.
      */
     public function valid() {

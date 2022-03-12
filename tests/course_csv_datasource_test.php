@@ -21,6 +21,8 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace tool_importer;
+use advanced_testcase;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -92,7 +94,7 @@ class course_csv_datasource_test extends advanced_testcase {
         global $CFG;
         $importer = new course_sample1_csv(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv');
-        $columns = $importer->get_fields_definition();
+        $importer->get_fields_definition();
         $this->assertEquals(
             array(
                 'CodeProduit' => 'AC-CHIR-ARTHRO',
@@ -139,7 +141,7 @@ class course_csv_datasource_test extends advanced_testcase {
         global $CFG;
         $importer = new course_sample1_csv(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_empty.csv');
-        $columns = $importer->get_fields_definition();
+        $importer->get_fields_definition();
         $this->assertEquals(
             null,
             $importer->current()

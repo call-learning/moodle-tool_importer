@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * Course data importer test
  *
@@ -21,14 +20,31 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace tool_importer;
+defined('MOODLE_INTERNAL') || die();
 
-use tool_importer\field_types;
-use tool_importer\processor;
+use advanced_testcase;
+use course_modinfo;
 use tool_importer\local\importer\course_data_importer;
 use tool_importer\local\transformer\standard;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Test importer class
+ *
+ * @package     tool_importer
+ * @copyright   2021 CALL Learning <laurent@call-learning.fr>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_dataimporter_data_source extends \tool_importer\local\source\csv_data_source {
+    /**
+     * Get field definition
+     *
+     * @return array[]
+     */
+    public function get_fields_definition() {
+        return course_dataimporter_test::CSV_DEFINITION;
+    }
+}
 /**
  * Tests the import process with a simple case
  *
@@ -73,20 +89,8 @@ class course_dataimporter_test extends advanced_testcase {
         // Create a couple of custom fields definitions.
         $catid = $generator->create_custom_field_category([])->get('id');
         $generator->create_custom_field(['categoryid' => $catid, 'type' => 'text', 'shortname' => 'f1']);
-        // phpcs:disable
-        $this->csvimporter = new class(
-            $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv')
-            extends \tool_importer\local\source\csv_data_source {
-            /**
-             * Get field definition
-             *
-             * @return array[]
-             */
-            public function get_fields_definition() {
-                return course_dataimporter_test::CSV_DEFINITION;
-            }
-        };
-        // phpcs:enable
+        $this->csvimporter = new course_dataimporter_data_source(
+            $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv');
     }
 
     public function test_simple_course_import() {
@@ -116,7 +120,7 @@ class course_dataimporter_test extends advanced_testcase {
     }
 
     public function test_simple_course_with_template_import() {
-        global $CFG, $DB;
+        global $DB;
         $csvimporter = $this->csvimporter;
         $transformdef = array(
             'CodeProduit' => array(array('to' => 'idnumber')),

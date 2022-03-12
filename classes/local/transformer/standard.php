@@ -27,11 +27,7 @@
 
 namespace tool_importer\local\transformer;
 
-use core_customfield\data;
-use stdClass;
 use tool_importer\data_transformer;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class data_transformer
@@ -69,7 +65,7 @@ class standard extends data_transformer {
                             $separators[$fieldname] = [];
                         }
                         $separators[$fieldname][$order] = empty($tdef['concatenate']['separator']) ? $this->concatseparator :
-                            $tdef['concatenate']['separator'];
+                                $tdef['concatenate']['separator'];
                     }
                     if (!empty($tdef['transformcallback'])) {
                         $callback = $tdef['transformcallback'];
@@ -100,7 +96,7 @@ class standard extends data_transformer {
                     }
                     if (!empty($result)) {
                         $separator = (isset($separators[$fieldname]) && isset($separators[$fieldname][$order])) ?
-                            $separators[$fieldname][$order] : $this->concatseparator;
+                                $separators[$fieldname][$order] : $this->concatseparator;
                         $result .= $separator;
                     }
                     $result .= $val;

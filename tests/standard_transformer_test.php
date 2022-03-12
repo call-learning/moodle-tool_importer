@@ -21,10 +21,9 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+namespace tool_importer;
+use advanced_testcase;
 use tool_importer\local\transformer\standard;
-
-defined('MOODLE_INTERNAL') || die();
 
 function test_transform_callback($value, $columnname) {
     return strval($value) . 'VAL';
@@ -76,7 +75,7 @@ class standard_transformer_test extends advanced_testcase {
      */
     public function test_simple_column_transform_with_callback() {
         $transformdef = array(
-            'col1' => array(array('to' => 'newcol1', 'transformcallback' => 'test_transform_callback')),
+            'col1' => array(array('to' => 'newcol1', 'transformcallback' => '\\tool_importer\\test_transform_callback')),
             'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
         );
         $transformer = new standard($transformdef);
@@ -97,7 +96,7 @@ class standard_transformer_test extends advanced_testcase {
     public function test_simple_column_transform_with_enhanced_callback() {
         $transformdef = array(
             'col1' => array(array('to' => 'summary'),
-                array('to' => 'format', 'transformcallback' => 'test_transform_callback_summaryformat')),
+                array('to' => 'format', 'transformcallback' => '\\tool_importer\\test_transform_callback_summaryformat')),
             'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
         );
         $transformer = new standard($transformdef);

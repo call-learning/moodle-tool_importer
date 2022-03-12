@@ -16,11 +16,10 @@
 
 namespace tool_importer\local\logs;
 
+use coding_exception;
 use core\persistent;
 use stdClass;
 use tool_importer\local\log_levels;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class import_log
@@ -47,9 +46,92 @@ class import_log_entity extends persistent implements import_log_entity_interfac
             $record->level = log_levels::convert_level_name_to_level_number($record->type) ?? log_levels::LEVEL_INFO;
         }
         $record->additionalinfo =
-            is_string($record->additionalinfo) ? $record->additionalinfo : json_encode($record->additionalinfo);
+                is_string($record->additionalinfo) ? $record->additionalinfo : json_encode($record->additionalinfo);
         parent::__construct($id, $record);
 
+    }
+
+    /**
+     * Usual properties definition for a persistent
+     *
+     * @return array|array[]
+     * @throws coding_exception
+     */
+    protected static function define_properties() {
+        return array(
+                'linenumber' => array(
+                        'type' => PARAM_INT,
+                        'null' => NULL_NOT_ALLOWED,
+                ),
+                'messagecode' => array(
+                        'type' => PARAM_TEXT,
+                        'null' => NULL_NOT_ALLOWED,
+                ),
+                'module' => array(
+                        'type' => PARAM_TEXT,
+                ),
+                'additionalinfo' => array(
+                        'type' => PARAM_TEXT,
+                        'default' => '',
+                        'null' => NULL_ALLOWED
+                ),
+                'fieldname' => array(
+                        'type' => PARAM_TEXT,
+                        'default' => '',
+                        'null' => NULL_ALLOWED
+                ),
+                'level' => array(
+                        'type' => PARAM_INT,
+                        'default' => log_levels::LEVEL_WARNING,
+                        'choices' => array(
+                                log_levels::LEVEL_INFO,
+                                log_levels::LEVEL_WARNING,
+                                log_levels::LEVEL_ERROR,
+                        ),
+                        'format' => [
+                                'choices' => [
+                                        log_levels::LEVEL_INFO => get_string('log:level:info', 'tool_importer'),
+                                        log_levels::LEVEL_WARNING => get_string('log:level:warning', 'tool_importer'),
+                                        log_levels::LEVEL_ERROR => get_string('log:level:error', 'tool_importer'),
+                                ]
+                        ]
+                ),
+                'origin' => array(
+                        'type' => PARAM_TEXT,
+                ),
+                'importid' => array(
+                        'type' => PARAM_INT,
+                ),
+                'validationstep' => array(
+                        'type' => PARAM_BOOL,
+                        'default' => false,
+                        'null' => NULL_ALLOWED
+                ),
+        );
+    }
+
+    /**
+     * Get message (human-readable)
+     *
+     * @return string
+     * @throws coding_exception
+     */
+    public function get_full_message() {
+        $record = $this->to_record();
+        $data = $this->get('additionalinfo');
+        if (is_object($data)) {
+            $data = $data->info ?? '';
+        }
+        $message = get_string($record->messagecode, $record->module, $data);
+
+        return get_string('importlog:message',
+                'tool_importer',
+                (object) [
+                        'line' => $record->linenumber,
+                        'message' => $message,
+                        'level' => strtoupper(log_levels::to_displayable_string($record->level)),
+                        'fieldname' => $record->fieldname
+                ]);
     }
 
     /**
@@ -70,88 +152,5 @@ class import_log_entity extends persistent implements import_log_entity_interfac
         $data = $this->raw_get('additionalinfo');
         $json = json_decode($data);
         return $json ?? $data;
-    }
-
-    /**
-     * Usual properties definition for a persistent
-     *
-     * @return array|array[]
-     * @throws \coding_exception
-     */
-    protected static function define_properties() {
-        return array(
-            'linenumber' => array(
-                'type' => PARAM_INT,
-                'null' => NULL_NOT_ALLOWED,
-            ),
-            'messagecode' => array(
-                'type' => PARAM_TEXT,
-                'null' => NULL_NOT_ALLOWED,
-            ),
-            'module' => array(
-                'type' => PARAM_TEXT,
-            ),
-            'additionalinfo' => array(
-                'type' => PARAM_TEXT,
-                'default' => '',
-                'null' => NULL_ALLOWED
-            ),
-            'fieldname' => array(
-                'type' => PARAM_TEXT,
-                'default' => '',
-                'null' => NULL_ALLOWED
-            ),
-            'level' => array(
-                'type' => PARAM_INT,
-                'default' => log_levels::LEVEL_WARNING,
-                'choices' => array(
-                    log_levels::LEVEL_INFO,
-                    log_levels::LEVEL_WARNING,
-                    log_levels::LEVEL_ERROR,
-                ),
-                'format' => [
-                    'choices' => [
-                        log_levels::LEVEL_INFO => get_string('log:level:info', 'tool_importer'),
-                        log_levels::LEVEL_WARNING => get_string('log:level:warning', 'tool_importer'),
-                        log_levels::LEVEL_ERROR => get_string('log:level:error', 'tool_importer'),
-                    ]
-                ]
-            ),
-            'origin' => array(
-                'type' => PARAM_TEXT,
-            ),
-            'importid' => array(
-                'type' => PARAM_INT,
-            ),
-            'validationstep' => array(
-                'type' => PARAM_BOOL,
-                'default' => false,
-                'null' => NULL_ALLOWED
-            ),
-        );
-    }
-
-    /**
-     * Get message (human readable)
-     *
-     * @return string
-     * @throws \coding_exception
-     */
-    public function get_full_message() {
-        $record = $this->to_record();
-        $data = $this->get('additionalinfo');
-        if (is_object($data)) {
-            $data = $data->info ?? '';
-        }
-        $message = get_string($record->messagecode, $record->module, $data);
-
-        return get_string('importlog:message',
-            'tool_importer',
-            (object)[
-                'line' => $record->linenumber,
-                'message' => $message,
-                'level' => strtoupper(log_levels::to_displayable_string($record->level)),
-                'fieldname' => $record->fieldname
-            ]);
     }
 }
