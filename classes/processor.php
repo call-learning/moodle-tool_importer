@@ -140,7 +140,8 @@ class processor {
         $this->source->init_and_check($options);
         $this->source->rewind();
         $this->importer->init($options);
-        while ($this->source->valid()) {
+        $hasunrecoverableerror = false;
+        while ($this->source->valid() && !$hasunrecoverableerror) {
             try {
                 $row = $this->source->current();
                 $this->importer->fix_before_transform($row, $rowindex, $options);
@@ -160,6 +161,7 @@ class processor {
                 ]);
                 $log->set('validationstep', !$this->importer->is_import_mode());
                 $log->create();
+                $hasunrecoverableerror = $log->is_error(); // We will exit here.
             } finally {
                 $rowindex++;
                 $this->source->next(); // This can lead to an exception here.

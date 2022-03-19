@@ -44,7 +44,7 @@ class log_levels {
      */
     const LEVEL_WARNING = 1;
     /**
-     * Error
+     * Error : this should stop all import or validation process.
      */
     const LEVEL_ERROR = 2;
 

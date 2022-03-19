@@ -135,6 +135,16 @@ class import_log_entity extends persistent implements import_log_entity_interfac
     }
 
     /**
+     * Is an error
+     *
+     * Difference between error and other errors is that it will stop entirely the importation / validation.
+     * @return bool
+     */
+    public function is_error() {
+        return $this->get('level') == log_levels::LEVEL_ERROR;
+    }
+
+    /**
      * Add more info to the log (and encode it if to be stored in db)
      *
      * @param object|string $value
