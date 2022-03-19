@@ -127,7 +127,7 @@ abstract class csv_data_source extends data_source {
         $importid = csv_import_reader::get_new_iid('upload_course_datasource');
         if (!is_file($this->csvfilepath)) {
             throw new importer_exception('cannotopencsvfile',
-                    -1,
+                    importer_exception::ROW_HEADER_INDEX,
                     '',
                     'tool_importer',
                     $this->csvfilepath,
@@ -141,7 +141,7 @@ abstract class csv_data_source extends data_source {
         $content = file_get_contents($this->csvfilepath);
         if (!mb_detect_encoding($content, $this->encoding, true)) {
             throw new importer_exception('wrongencoding',
-                    -1,
+                    importer_exception::ROW_HEADER_INDEX,
                     '',
                     'tool_importer',
                     (object) ['expected' => $this->encoding, 'actual' => mb_detect_encoding($content)],
@@ -151,7 +151,8 @@ abstract class csv_data_source extends data_source {
         $this->rowcount = ($this->rowcount > 0) ? $this->rowcount - 1 : 0; // Row count minus header.
         $csvheaders = $this->csvimporter->get_columns();
         if (!$csvheaders) {
-            throw new importer_exception('nocolumnsdefined', -1, '', 'tool_importer', '', log_levels::LEVEL_ERROR);
+            throw new importer_exception('nocolumnsdefined', importer_exception::ROW_HEADER_INDEX, '', 'tool_importer', '',
+                    log_levels::LEVEL_ERROR);
         }
         $this->setup_fields_before_defintion($csvheaders);
         foreach ($this->get_fields_definition() as $colname => $definition) {
@@ -164,7 +165,8 @@ abstract class csv_data_source extends data_source {
                 }
             }
             if ($foundindex == -1 && !empty($definition['required'])) {
-                throw new importer_exception('columnmissing', -1, $colname, 'tool_importer', '', log_levels::LEVEL_ERROR);
+                throw new importer_exception('columnmissing', importer_exception::ROW_HEADER_INDEX, $colname, 'tool_importer', '',
+                        log_levels::LEVEL_ERROR);
             }
             if (!empty($definition['required'])) {
                 $this->requiredcolumns[$foundindex] = $colname;

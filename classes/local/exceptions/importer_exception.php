@@ -47,10 +47,15 @@ class importer_exception extends moodle_exception {
     public $linenumber = 0;
 
     /**
+     * The error happened in the Header
+     */
+    const ROW_HEADER_INDEX = -1;
+
+    /**
      * Create a validation exception
      *
      * @param string $messagecode
-     * @param int $rowindex
+     * @param int $rowindex , -1 for header
      * @param string $fieldname
      * @param string $module
      * @param null $additionalinfo
@@ -58,13 +63,14 @@ class importer_exception extends moodle_exception {
      * @param null $debuginfo
      */
     public function __construct($messagecode,
-            $rowindex,
+            $rowindex = self::ROW_HEADER_INDEX,
             $fieldname = '',
             $module = 'tool_importer',
             $additionalinfo = null,
             $level = log_levels::LEVEL_WARNING,
             $debuginfo = null) {
-        $this->linenumber = $rowindex + 2; // We take into account the header and the fact we start at index 0, although this
+        $this->linenumber = $rowindex + 2;
+        // We take into account the header and the fact we start at index 0, although this
         // make more sense to start row index at 1.
         $this->level = $level;
         $this->fieldname = $fieldname;
