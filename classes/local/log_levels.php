@@ -52,7 +52,7 @@ class log_levels {
      * Match for level and short name
      */
     const LEVEL_TO_SN = [
-            self::LEVEL_INFO => 'none',
+            self::LEVEL_INFO => 'info',
             self::LEVEL_ERROR => 'error',
             self::LEVEL_WARNING => 'warning'
     ];
