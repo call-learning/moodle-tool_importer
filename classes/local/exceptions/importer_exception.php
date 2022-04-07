@@ -18,6 +18,7 @@ namespace tool_importer\local\exceptions;
 
 use moodle_exception;
 use tool_importer\local\log_levels;
+use tool_importer\local\logs\import_logger;
 
 /**
  * Data importer exception.
@@ -47,9 +48,9 @@ class importer_exception extends moodle_exception {
     public $linenumber = 0;
 
     /**
-     * The error happened in the Header
+     * The error happened in the Header, same as in the logger.
      */
-    const ROW_HEADER_INDEX = -1;
+    const ROW_HEADER_INDEX = import_logger::HEADER_ROW_LINE_NUMBER;
 
     /**
      * Create a validation exception

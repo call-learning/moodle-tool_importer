@@ -121,7 +121,7 @@ class basic_import_logger implements import_logger {
         $log = new import_log_entity(
                 0,
                 (object) [
-                        'linenumber' => $linenumber,
+                        'linenumber' => $linenumber + 2,
                         'messagecode' => $messagecode,
                         'module' => $processor->get_module(),
                         'additionalinfo' => $additionalinfo,

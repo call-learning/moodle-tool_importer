@@ -82,4 +82,8 @@ interface import_logger {
     public function create_log($linenumber, $messagecode, $fieldname, processor $processor, $additionalinfo = '',
             $level = log_levels::LEVEL_WARNING);
 
+    /**
+     * Handy for the create_log linenumber if we want to point to the header row.
+     */
+    const HEADER_ROW_LINE_NUMBER = -1;
 }
