@@ -22,8 +22,6 @@ use tool_importer\local\exceptions\importer_exception;
 use tool_importer\local\log_levels;
 use tool_importer\local\utils;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * CSV Data source for courses
  *
@@ -107,7 +105,7 @@ abstract class csv_data_source extends data_source {
      * @param bool $exactcolumnname should the column name be compared on an exact basis (space and accent)
      */
     public function __construct($csvfilepath, $separator = 'semicolon', $encoding = 'utf-8', $originalfilename = '',
-        $exactcolumnname = false) {
+            $exactcolumnname = false) {
         $this->csvfilepath = $csvfilepath;
         $this->separator = $separator;
         $this->encoding = $encoding;
@@ -129,11 +127,11 @@ abstract class csv_data_source extends data_source {
         $importid = csv_import_reader::get_new_iid('upload_course_datasource');
         if (!is_file($this->csvfilepath)) {
             throw new importer_exception('cannotopencsvfile',
-                -1,
-                '',
-                'tool_importer',
-                $this->csvfilepath,
-                log_levels::LEVEL_ERROR
+                    -1,
+                    '',
+                    'tool_importer',
+                    $this->csvfilepath,
+                    log_levels::LEVEL_ERROR
             );
         }
         if (empty($this->csvimporter)) {
@@ -143,11 +141,11 @@ abstract class csv_data_source extends data_source {
         $content = file_get_contents($this->csvfilepath);
         if (!mb_detect_encoding($content, $this->encoding, true)) {
             throw new importer_exception('wrongencoding',
-                -1,
-                '',
-                'tool_importer',
-                (object) ['expected' => $this->encoding, 'actual' => mb_detect_encoding($content)],
-                log_levels::LEVEL_ERROR);
+                    -1,
+                    '',
+                    'tool_importer',
+                    (object) ['expected' => $this->encoding, 'actual' => mb_detect_encoding($content)],
+                    log_levels::LEVEL_ERROR);
         }
         $this->rowcount = $this->csvimporter->load_csv_content($content, $this->encoding, $this->separator);
         $this->rowcount = ($this->rowcount > 0) ? $this->rowcount - 1 : 0; // Row count minus header.
@@ -155,6 +153,7 @@ abstract class csv_data_source extends data_source {
         if (!$csvheaders) {
             throw new importer_exception('nocolumnsdefined', -1, '', 'tool_importer', '', log_levels::LEVEL_ERROR);
         }
+        $this->setup_fields_before_defintion($csvheaders);
         foreach ($this->get_fields_definition() as $colname => $definition) {
             $foundindex = -1;
             foreach ($csvheaders as $csvheaderindex => $colheadername) {
@@ -253,11 +252,11 @@ abstract class csv_data_source extends data_source {
         $this->isvalid = true;
         if ($this->csvimporter->get_error()) {
             throw new importer_exception('csvimporteriniterror',
-                $this->currentrow,
-                '',
-                'tool_importer',
-                $this->csvimporter->get_error(),
-                log_levels::LEVEL_ERROR
+                    $this->currentrow,
+                    '',
+                    'tool_importer',
+                    $this->csvimporter->get_error(),
+                    log_levels::LEVEL_ERROR
             );
         }
         $this->currentvalue = $this->retrieve_next_value();
