@@ -33,3 +33,4 @@ $string['log:level:info'] = 'Info';
 $string['importlog:message']  = '{$a->level} (Line {$a->line}, Field:{$a->fieldname}): {$a->message}';
 $string['columnmissing'] = 'Column missing';
 $string['csvimporteriniterror'] = 'Intial importer error ({$a}).';
+$string['wrongtype'] = 'Wrong type for field.';
