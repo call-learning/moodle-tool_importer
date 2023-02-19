@@ -59,9 +59,9 @@ class basic_import_logger implements import_logger {
         $importloginfo = new stdClass();
         $importloginfo->messagecode = $e->errorcode;
         $importloginfo->origin = $overrides['origin'] ?? 'unknown';
-        $importloginfo->module = $e->module ?? ($overrides['module'] ?? 'tool_importer');
-        $importloginfo->level = $e->level ?? ($overrides['level'] ?? log_levels::LEVEL_INFO);
-        $importloginfo->linenumber = $e->linenumber ?? ($overrides['linenumber'] ?? 0);
+        $importloginfo->module = $overrides['module'] ?? ($e->module ?? 'tool_importer');
+        $importloginfo->level = $overrides['level'] ?? ($e->level ?? log_levels::LEVEL_INFO);
+        $importloginfo->linenumber = $overrides['linenumber'] ?? ($e->linenumber ?? 0);
         $importloginfo->fieldname = $e->fieldname ?? '';
         $importloginfo->importid = $overrides['importid'];
         $additionalinfo = $e->a ?? '';
