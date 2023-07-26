@@ -297,7 +297,7 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'wrongencoding',
-                        'linenumber' => '0',
+                        'linenumber' => '1',
                         'fieldname' => ''
                     ]
                 ]
@@ -310,7 +310,7 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'wrongtype',
-                        'linenumber' => '1',
+                        'linenumber' => '3',
                         'fieldname' => 'Colonne 1'
                     ]
                 ]
@@ -324,7 +324,7 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'columnmissing',
-                        'linenumber' => '0',
+                        'linenumber' => '1',
                         'fieldname' => 'Colonne 2'
                     ]
                 ]
@@ -359,7 +359,7 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'cannotopencsvfile',
-                        'linenumber' => '0',
+                        'linenumber' => '1',
                         'fieldname' => ''
                     ]
                 ]

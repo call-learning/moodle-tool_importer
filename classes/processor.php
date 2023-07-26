@@ -154,7 +154,7 @@ class processor {
             } catch (moodle_exception $e) {
                 $haserrors = true;
                 $log = $this->importlogger->log_from_exception($e, [
-                        'linenumber' => $rowindex,
+                        'linenumber' => $e->linenumber ?? $rowindex,
                         'module' => $this->module,
                         'origin' => $this->source->get_origin(),
                         'importid' => $this->importer->get_import_id()
@@ -231,7 +231,7 @@ class processor {
             $this->source->rewind();
         } catch (moodle_exception $e) {
             $log = $this->importlogger->log_from_exception($e, [
-                    'linenumber' => 0,
+                    'linenumber' => $e->linenumber,
                     'module' => $this->module,
                     'origin' => $this->source->get_origin(),
                     'importid' => $this->importer->get_import_id()
