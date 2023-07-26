@@ -21,7 +21,9 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_importer;
+
 use advanced_testcase;
 use tool_importer\local\transformer\standard;
 
@@ -51,7 +53,9 @@ class standard_transformer_test extends advanced_testcase {
     );
 
     /**
-     * Test
+     * Test transform with simple column
+     *
+     * @covers \tool_importer\local\transformer\standard::transform
      */
     public function test_simple_column_transform() {
         $transformdef = array(
@@ -71,7 +75,9 @@ class standard_transformer_test extends advanced_testcase {
     }
 
     /**
-     * Test
+     * Test transform with callback
+     *
+     * @covers \tool_importer\local\transformer\standard::transform
      */
     public function test_simple_column_transform_with_callback() {
         $transformdef = array(
@@ -91,7 +97,9 @@ class standard_transformer_test extends advanced_testcase {
     }
 
     /**
-     * Test
+     * Test simple column transform with enhanced callback
+     *
+     * @covers \tool_importer\local\transformer\standard::transform
      */
     public function test_simple_column_transform_with_enhanced_callback() {
         $transformdef = array(
@@ -113,7 +121,9 @@ class standard_transformer_test extends advanced_testcase {
     }
 
     /**
-     * Test
+     * Test concat with simple column
+     *
+     * @covers \tool_importer\local\transformer\standard::transform
      */
     public function test_simple_column_concat() {
         $transformdef = array(

@@ -137,7 +137,7 @@ abstract class csv_data_source extends data_source {
         if (empty($this->csvimporter)) {
             $this->csvimporter = new csv_import_reader($importid, 'upload_course_datasource');
         }
-        $this->csvimporter->init($options);
+        $this->csvimporter->init();
         $content = file_get_contents($this->csvfilepath);
         if (!mb_detect_encoding($content, $this->encoding, true)) {
             throw new importer_exception('wrongencoding',
@@ -180,7 +180,7 @@ abstract class csv_data_source extends data_source {
      *
      * @return mixed|null
      */
-    public function current() {
+    public function current(): mixed {
         if (!$this->isinited) {
             $this->rewind();
             $this->isvalid = true;
@@ -227,9 +227,9 @@ abstract class csv_data_source extends data_source {
     /**
      * Current key (row)
      *
-     * @return bool|float|int|string|null
+     * @return mixed
      */
-    public function key() {
+    public function key(): mixed {
         return $this->currentrow;
     }
 
@@ -238,14 +238,14 @@ abstract class csv_data_source extends data_source {
      *
      * @return bool
      */
-    public function valid() {
+    public function valid(): bool {
         return parent::valid() && (empty($this->csvimporter->get_error()));
     }
 
     /**
      * Replace the iterator on the first element
      */
-    public function rewind() {
+    public function rewind(): void {
         if (empty($this->csvimporter)) {
             $this->init_and_check();
         }

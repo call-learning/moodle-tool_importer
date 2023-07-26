@@ -42,7 +42,7 @@ class course_sample1_csv extends \tool_importer\local\source\csv_data_source {
      *
      * @return array
      */
-    public function get_fields_definition() {
+    public function get_fields_definition(): array {
         return array(
             "CodeProduit" => \tool_importer\field_types::TYPE_TEXT,
             "IntituleProduit" => \tool_importer\field_types::TYPE_TEXT,
@@ -89,12 +89,14 @@ class course_csv_datasource_test extends advanced_testcase {
 
     /**
      * Test
+     * @covers \tool_importer\local\source\csv_data_source::next
+     * @covers \tool_importer\local\source\csv_data_source::current
+     * @covers \tool_importer\local\source\csv_data_source::valid
      */
     public function test_simple_course_csv_import() {
         global $CFG;
         $importer = new course_sample1_csv(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv');
-        $importer->get_fields_definition();
         $this->assertEquals(
             array(
                 'CodeProduit' => 'AC-CHIR-ARTHRO',
@@ -104,29 +106,31 @@ class course_csv_datasource_test extends advanced_testcase {
             ),
             $importer->current()
         );
-
+        $importer->next();
         $this->assertEquals(
             array(
                 'CodeProduit' => 'AC-CHIR-BRACHY',
                 'IntituleProduit' => 'CHIRURGIE DU SYNDROME BRACHYCEPHALE',
                 'ResumeProduit' => self::LOREM_IPSUM
             ),
-            $importer->next()
+            $importer->current()
         );
+        $importer->next();
         $this->assertEquals(
             array(
                 'CodeProduit' => 'AC-CHIR-COUDE',
                 'IntituleProduit' => 'PATHOLOGIE ARTICULAIRE DU COUDE CHEZ LES CARNIVORES DOMESTIQUES',
                 'ResumeProduit' => self::LOREM_IPSUM
             ),
-            $importer->next()
+            $importer->current()
         );
         $this->assertEquals(
             true,
             $importer->valid()
         );
+        $importer->next();
         $this->assertNotNull(
-            $importer->next()
+            $importer->current()
         );
         $this->assertEquals(
             false,
@@ -136,12 +140,13 @@ class course_csv_datasource_test extends advanced_testcase {
 
     /**
      * Test
+     * @covers \tool_importer\local\source\csv_data_source::next
+     * @covers \tool_importer\local\source\csv_data_source::valid
      */
     public function test_empty_course_csv_import() {
         global $CFG;
         $importer = new course_sample1_csv(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_empty.csv');
-        $importer->get_fields_definition();
         $this->assertEquals(
             null,
             $importer->current()
@@ -154,6 +159,8 @@ class course_csv_datasource_test extends advanced_testcase {
 
     /**
      * Test
+     * @covers \tool_importer\local\source\csv_data_source::next
+     * @covers \tool_importer\local\source\csv_data_source::current
      */
     public function test_iterator_course_csv_import() {
         global $CFG;

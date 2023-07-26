@@ -20,6 +20,7 @@
  * @copyright   2021 CALL Learning <laurent@call-learning.fr>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace tool_importer;
 defined('MOODLE_INTERNAL') || die();
 
@@ -45,6 +46,7 @@ class course_dataimporter_data_source extends \tool_importer\local\source\csv_da
         return course_dataimporter_test::CSV_DEFINITION;
     }
 }
+
 /**
  * Tests the import process with a simple case
  *
@@ -93,6 +95,12 @@ class course_dataimporter_test extends advanced_testcase {
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv');
     }
 
+    /**
+     * Test simple course import
+     *
+     * @return void
+     * @covers \tool_importer\local\importer\course_data_importer
+     */
     public function test_simple_course_import() {
         global $DB;
         $csvimporter = $this->csvimporter;
@@ -119,6 +127,12 @@ class course_dataimporter_test extends advanced_testcase {
         $this->assertTrue($importer->get_import_id() === 50);
     }
 
+    /**
+     * Test simple course import with custom fields
+     *
+     * @return void
+     * @covers \tool_importer\local\importer\course_data_importer
+     */
     public function test_simple_course_with_template_import() {
         global $DB;
         $csvimporter = $this->csvimporter;
@@ -150,6 +164,7 @@ class course_dataimporter_test extends advanced_testcase {
     /**
      * Test simple course with custom fields
      *
+     * @covers \tool_importer\local\importer\course_data_importer
      */
     public function test_simple_course_with_customfields() {
         global $DB;

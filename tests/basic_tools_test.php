@@ -106,6 +106,7 @@ class basic_tools_test extends advanced_testcase {
      * @param array $columndef
      * @param array $expected
      * @dataProvider basic_import_dataprovider
+     * @covers \tool_importer\processor
      */
     public function test_importer_basic($datagrid, $columndef, $expected) {
         $this->resetAfterTest();
@@ -254,6 +255,7 @@ class basic_tools_test extends advanced_testcase {
      * @param array $results
      * @param array $errors
      * @dataProvider basic_csv_dataprovider
+     * @covers \tool_importer\processor
      */
     public function test_importer_csv($filename, $results, $errors) {
         $this->resetAfterTest();
@@ -295,7 +297,7 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'wrongencoding',
-                        'linenumber' => '1',
+                        'linenumber' => '0',
                         'fieldname' => ''
                     ]
                 ]
@@ -308,7 +310,7 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'wrongtype',
-                        'linenumber' => '3',
+                        'linenumber' => '1',
                         'fieldname' => 'Colonne 1'
                     ]
                 ]
@@ -322,7 +324,7 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'columnmissing',
-                        'linenumber' => '1',
+                        'linenumber' => '0',
                         'fieldname' => 'Colonne 2'
                     ]
                 ]
@@ -357,7 +359,7 @@ class basic_tools_test extends advanced_testcase {
                 'errors' => [
                     [
                         'messagecode' => 'cannotopencsvfile',
-                        'linenumber' => '1',
+                        'linenumber' => '0',
                         'fieldname' => ''
                     ]
                 ]
@@ -371,6 +373,7 @@ class basic_tools_test extends advanced_testcase {
      * @param array $results
      * @param array $errors
      * @dataProvider basic_csv_dataprovider
+     * @covers \tool_importer\processor
      */
     public function test_validate_basic($filename, $results, $errors) {
         $this->resetAfterTest();

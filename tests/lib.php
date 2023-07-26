@@ -98,7 +98,7 @@ class inmemory_data_source extends data_source {
      * @return array|false|mixed
      * @throws moodle_exception
      */
-    public function current() {
+    public function current(): mixed {
         $keys = array_keys($this->get_fields_definition());
         if (count($this->dataarray[$this->currentrow]) != count($keys)) {
             throw new \moodle_exception('wrongcolumnnumber', 'local_importer');
@@ -126,7 +126,7 @@ class inmemory_data_source extends data_source {
      *
      * @return bool|float|int|string|null
      */
-    public function key() {
+    public function key(): mixed {
         return $this->currentrow;
     }
 
@@ -135,14 +135,14 @@ class inmemory_data_source extends data_source {
      *
      * @return bool
      */
-    public function valid() {
+    public function valid(): bool {
         return $this->currentrow < count($this->dataarray);
     }
 
     /**
      * Do rewind
      */
-    public function rewind() {
+    public function rewind(): void {
         $this->currentrow = 0;
     }
 

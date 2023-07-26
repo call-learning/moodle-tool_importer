@@ -119,17 +119,17 @@ abstract class data_source implements Iterator, data_processor_mgmt_interface {
     abstract public function get_source_identifier();
 
     /**
-     * Get next element and protect it from throwing an exc
+     * Get next element and protect it from throwing an exception
+     * This is a wrapper around the next function.
      *
-     * @return false|mixed
+     * @return void
      */
-    public function next() {
+    public function next(): void {
         try {
             $this->currentvalue = $this->retrieve_next_value();
         } catch (Exception $e) {
             $this->isvalid = false;
         }
-        return $this->currentvalue;
     }
 
     /**
@@ -144,7 +144,7 @@ abstract class data_source implements Iterator, data_processor_mgmt_interface {
      * @return bool The return value will be cast to boolean and then evaluated.
      * Returns true on success or false on failure.
      */
-    public function valid() {
+    public function valid(): bool {
         return $this->isvalid;
     }
 }
