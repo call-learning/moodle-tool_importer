@@ -63,7 +63,7 @@ class inmemory_data_source extends data_source {
         ],
         'col4' => [
             'type' => \tool_importer\field_types::TYPE_TEXT,
-        ]
+        ],
     ];
 
     /**

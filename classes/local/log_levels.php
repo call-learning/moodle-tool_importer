@@ -54,7 +54,7 @@ class log_levels {
     const LEVEL_TO_SN = [
             self::LEVEL_INFO => 'info',
             self::LEVEL_ERROR => 'error',
-            self::LEVEL_WARNING => 'warning'
+            self::LEVEL_WARNING => 'warning',
     ];
 
     /**

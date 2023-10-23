@@ -58,56 +58,56 @@ class import_log_entity extends persistent implements import_log_entity_interfac
      * @throws coding_exception
      */
     protected static function define_properties() {
-        return array(
-                'linenumber' => array(
+        return [
+                'linenumber' => [
                         'type' => PARAM_INT,
                         'null' => NULL_NOT_ALLOWED,
-                ),
-                'messagecode' => array(
+                ],
+                'messagecode' => [
                         'type' => PARAM_TEXT,
                         'null' => NULL_NOT_ALLOWED,
-                ),
-                'module' => array(
+                ],
+                'module' => [
                         'type' => PARAM_TEXT,
-                ),
-                'additionalinfo' => array(
-                        'type' => PARAM_TEXT,
-                        'default' => '',
-                        'null' => NULL_ALLOWED
-                ),
-                'fieldname' => array(
+                ],
+                'additionalinfo' => [
                         'type' => PARAM_TEXT,
                         'default' => '',
-                        'null' => NULL_ALLOWED
-                ),
-                'level' => array(
+                        'null' => NULL_ALLOWED,
+                ],
+                'fieldname' => [
+                        'type' => PARAM_TEXT,
+                        'default' => '',
+                        'null' => NULL_ALLOWED,
+                ],
+                'level' => [
                         'type' => PARAM_INT,
                         'default' => log_levels::LEVEL_WARNING,
-                        'choices' => array(
+                        'choices' => [
                                 log_levels::LEVEL_INFO,
                                 log_levels::LEVEL_WARNING,
                                 log_levels::LEVEL_ERROR,
-                        ),
+                        ],
                         'format' => [
                                 'choices' => [
                                         log_levels::LEVEL_INFO => get_string('log:level:info', 'tool_importer'),
                                         log_levels::LEVEL_WARNING => get_string('log:level:warning', 'tool_importer'),
                                         log_levels::LEVEL_ERROR => get_string('log:level:error', 'tool_importer'),
-                                ]
-                        ]
-                ),
-                'origin' => array(
+                                ],
+                        ],
+                ],
+                'origin' => [
                         'type' => PARAM_TEXT,
-                ),
-                'importid' => array(
+                ],
+                'importid' => [
                         'type' => PARAM_INT,
-                ),
-                'validationstep' => array(
+                ],
+                'validationstep' => [
                         'type' => PARAM_BOOL,
                         'default' => false,
-                        'null' => NULL_ALLOWED
-                ),
-        );
+                        'null' => NULL_ALLOWED,
+                ],
+        ];
     }
 
     /**
@@ -130,7 +130,7 @@ class import_log_entity extends persistent implements import_log_entity_interfac
                         'line' => $record->linenumber,
                         'message' => $message,
                         'level' => strtoupper(log_levels::to_displayable_string($record->level)),
-                        'fieldname' => $record->fieldname
+                        'fieldname' => $record->fieldname,
                 ]);
     }
 

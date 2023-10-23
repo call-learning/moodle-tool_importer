@@ -43,11 +43,11 @@ class course_sample1_csv extends \tool_importer\local\source\csv_data_source {
      * @return array
      */
     public function get_fields_definition(): array {
-        return array(
+        return [
             "CodeProduit" => \tool_importer\field_types::TYPE_TEXT,
             "IntituleProduit" => \tool_importer\field_types::TYPE_TEXT,
-            "ResumeProduit" => \tool_importer\field_types::TYPE_TEXT
-        );
+            "ResumeProduit" => \tool_importer\field_types::TYPE_TEXT,
+        ];
     }
 }
 
@@ -98,30 +98,30 @@ class course_csv_datasource_test extends advanced_testcase {
         $importer = new course_sample1_csv(
             $CFG->dirroot . '/admin/tool/importer/tests/fixtures/course_sample1.csv');
         $this->assertEquals(
-            array(
+            [
                 'CodeProduit' => 'AC-CHIR-ARTHRO',
                 'IntituleProduit' => 'ARTHROSCOPIE DE BASE - ARTHROSCOPIE  DIAGNOSTIC ET CHIRURGICALE DE L\'EPAULE ET DU COUDE '
                     . 'CHEZ LE CHIEN',
-                'ResumeProduit' => self::LOREM_IPSUM
-            ),
+                'ResumeProduit' => self::LOREM_IPSUM,
+            ],
             $importer->current()
         );
         $importer->next();
         $this->assertEquals(
-            array(
+            [
                 'CodeProduit' => 'AC-CHIR-BRACHY',
                 'IntituleProduit' => 'CHIRURGIE DU SYNDROME BRACHYCEPHALE',
-                'ResumeProduit' => self::LOREM_IPSUM
-            ),
+                'ResumeProduit' => self::LOREM_IPSUM,
+            ],
             $importer->current()
         );
         $importer->next();
         $this->assertEquals(
-            array(
+            [
                 'CodeProduit' => 'AC-CHIR-COUDE',
                 'IntituleProduit' => 'PATHOLOGIE ARTICULAIRE DU COUDE CHEZ LES CARNIVORES DOMESTIQUES',
-                'ResumeProduit' => self::LOREM_IPSUM
-            ),
+                'ResumeProduit' => self::LOREM_IPSUM,
+            ],
             $importer->current()
         );
         $this->assertEquals(
@@ -171,11 +171,11 @@ class course_csv_datasource_test extends advanced_testcase {
             $rows[] = $row;
         }
         $this->assertCount(3, $rows);
-        $this->assertEquals(array(
+        $this->assertEquals([
             'CodeProduit' => 'AC-CHIR-ARTHRO',
             'IntituleProduit' => 'ARTHROSCOPIE DE BASE - ARTHROSCOPIE  DIAGNOSTIC ET CHIRURGICALE DE L\'EPAULE ET DU COUDE '
                 . 'CHEZ LE CHIEN',
-            'ResumeProduit' => self::LOREM_IPSUM
-        ), $rows[0]);
+            'ResumeProduit' => self::LOREM_IPSUM,
+        ], $rows[0]);
     }
 }

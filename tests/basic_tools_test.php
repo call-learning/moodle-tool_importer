@@ -128,7 +128,7 @@ class basic_tools_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function basic_import_dataprovider() {
+    public static function basic_import_dataprovider(): array {
         return
             [
                 'basic1' => [
@@ -140,19 +140,19 @@ class basic_tools_test extends advanced_testcase {
                     'columndef' => [
                         'col1' => [
                             'type' => \tool_importer\field_types::TYPE_TEXT,
-                            'required' => true
+                            'required' => true,
                         ],
                         'col2' => [
                             'type' => \tool_importer\field_types::TYPE_TEXT,
-                            'required' => true
+                            'required' => true,
                         ],
                         'col3' => [
                             'type' => \tool_importer\field_types::TYPE_TEXT,
-                            'required' => true
+                            'required' => true,
                         ],
                         'col4' => [
                             'type' => \tool_importer\field_types::TYPE_TEXT,
-                            'required' => true
+                            'required' => true,
                         ],
                     ],
                     'expected' => [
@@ -177,8 +177,8 @@ class basic_tools_test extends advanced_testcase {
                                 'newcol1' => 'I',
                             ],
                         ],
-                        'importlogs' => []
-                    ]
+                        'importlogs' => [],
+                    ],
                 ],
                 'missingcol' => [
                     'datagrid' => [
@@ -189,19 +189,19 @@ class basic_tools_test extends advanced_testcase {
                     'columndef' => [
                         'col1' => [
                             'type' => \tool_importer\field_types::TYPE_TEXT,
-                            'required' => true
+                            'required' => true,
                         ],
                         'col2' => [
                             'type' => \tool_importer\field_types::TYPE_TEXT,
-                            'required' => true
+                            'required' => true,
                         ],
                         'col3' => [
                             'type' => \tool_importer\field_types::TYPE_TEXT,
-                            'required' => true
+                            'required' => true,
                         ],
                         'col4' => [
                             'type' => \tool_importer\field_types::TYPE_TEXT,
-                            'required' => true
+                            'required' => true,
                         ],
                     ],
                     'expected' => [
@@ -210,7 +210,7 @@ class basic_tools_test extends advanced_testcase {
                             'linenumber' => 1,
                             'messagecode' => 'wrongcolumnnumber',
                             'origin' => 'memory:test',
-                        ]],
+                        ], ],
                         'result' => [
                             [
                                 'col2' => 'B',
@@ -224,9 +224,9 @@ class basic_tools_test extends advanced_testcase {
                                 'col4' => 'L',
                                 'newcol1' => 'I',
                             ],
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
 
             ];
     }
@@ -242,11 +242,11 @@ class basic_tools_test extends advanced_testcase {
             ],
             "Colonne 2" => [
                 'required' => true,
-                'type' => field_types::TYPE_TEXT
+                'type' => field_types::TYPE_TEXT,
             ],
             "Colonne 3" => [
-                'type' => field_types::TYPE_TEXT
-            ]
+                'type' => field_types::TYPE_TEXT,
+            ],
         ];
 
     /**
@@ -279,28 +279,28 @@ class basic_tools_test extends advanced_testcase {
      *
      * @return array[]
      */
-    public function basic_csv_dataprovider() {
+    public static function basic_csv_dataprovider(): array {
         return [
             'Importation Ok' => [
                 'filename' => 'csv_sample1.csv',
                 'results' => [
                     'isvalid' => true,
                 ],
-                'errors' => []
+                'errors' => [],
             ],
             'Issue with encoding' => [
                 'filename' => 'csv_sample2_wrong_encoding.csv',
                 'results' => [
                     'isvalid' => false,
-                    'exception' => importer_exception::class
+                    'exception' => importer_exception::class,
                 ],
                 'errors' => [
                     [
                         'messagecode' => 'wrongencoding',
                         'linenumber' => '1',
-                        'fieldname' => ''
-                    ]
-                ]
+                        'fieldname' => '',
+                    ],
+                ],
             ],
             'Issue with coltype' => [
                 'filename' => 'csv_sample3_wrong_coltype.csv',
@@ -311,58 +311,58 @@ class basic_tools_test extends advanced_testcase {
                     [
                         'messagecode' => 'wrongtype',
                         'linenumber' => '3',
-                        'fieldname' => 'Colonne 1'
-                    ]
-                ]
+                        'fieldname' => 'Colonne 1',
+                    ],
+                ],
             ],
             'Issue with required column' => [
                 'filename' => 'csv_sample4_colmissing.csv',
                 'results' => [
                     'isvalid' => false,
-                    'exception' => importer_exception::class
+                    'exception' => importer_exception::class,
                 ],
                 'errors' => [
                     [
                         'messagecode' => 'columnmissing',
                         'linenumber' => '1',
-                        'fieldname' => 'Colonne 2'
-                    ]
-                ]
+                        'fieldname' => 'Colonne 2',
+                    ],
+                ],
             ],
             'Issue with specialchars' => [
                 'filename' => 'csv_sample5_colwithspecialchars.csv',
                 'results' => [
                     'isvalid' => true,
                 ],
-                'errors' => []
+                'errors' => [],
             ],
             'With additional column, no issue' => [
                 'filename' => 'csv_sample6_additional_cols.csv',
                 'results' => [
                     'isvalid' => true,
                 ],
-                'errors' => []
+                'errors' => [],
             ],
             'Issue with space' => [
                 'filename' => 'csv_sample7_withspace.csv',
                 'results' => [
                     'isvalid' => true,
                 ],
-                'errors' => []
+                'errors' => [],
             ],
             'Issue with filenotfound' => [
                 'filename' => 'randomname.csv',
                 'results' => [
                     'isvalid' => false,
-                    'exception' => importer_exception::class
+                    'exception' => importer_exception::class,
                 ],
                 'errors' => [
                     [
                         'messagecode' => 'cannotopencsvfile',
                         'linenumber' => '1',
-                        'fieldname' => ''
-                    ]
-                ]
+                        'fieldname' => '',
+                    ],
+                ],
             ],
         ];
     }

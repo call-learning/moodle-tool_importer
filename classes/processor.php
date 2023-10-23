@@ -157,7 +157,7 @@ class processor {
                         'linenumber' => $e->linenumber ?? $rowindex,
                         'module' => $this->module,
                         'origin' => $this->source->get_origin(),
-                        'importid' => $this->importer->get_import_id()
+                        'importid' => $this->importer->get_import_id(),
                 ]);
                 $log->set('validationstep', !$this->importer->is_import_mode());
                 $log->create();
@@ -234,7 +234,7 @@ class processor {
                     'linenumber' => $e->linenumber,
                     'module' => $this->module,
                     'origin' => $this->source->get_origin(),
-                    'importid' => $this->importer->get_import_id()
+                    'importid' => $this->importer->get_import_id(),
             ]);
             $log->set('validationstep', !$this->importer->is_import_mode());
             $log->create();
@@ -253,7 +253,7 @@ class processor {
      */
     public function purge_validation_logs() {
         $allvalidationlogs = $this->importlogger->get_logs(['validationstep' => 1,
-                'importid' => $this->importer->get_import_id()]);
+                'importid' => $this->importer->get_import_id(), ]);
         foreach ($allvalidationlogs as $log) {
             $log->delete();
         }
@@ -266,7 +266,7 @@ class processor {
      */
     public function get_validation_log() {
         return $this->importlogger->get_logs(['validationstep' => 1,
-                'importid' => $this->importer->get_import_id()]);
+                'importid' => $this->importer->get_import_id(), ]);
     }
 
     /**

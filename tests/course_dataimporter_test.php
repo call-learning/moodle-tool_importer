@@ -65,11 +65,11 @@ class course_dataimporter_test extends advanced_testcase {
             'required' => true,
         ],
         "IntituleProduit" => [
-            'type' => field_types::TYPE_TEXT
+            'type' => field_types::TYPE_TEXT,
         ],
         "ResumeProduit" => [
-            'type' => field_types::TYPE_TEXT
-        ]
+            'type' => field_types::TYPE_TEXT,
+        ],
     ];
 
     /**
@@ -104,11 +104,11 @@ class course_dataimporter_test extends advanced_testcase {
     public function test_simple_course_import() {
         global $DB;
         $csvimporter = $this->csvimporter;
-        $transformdef = array(
-            'CodeProduit' => array(array('to' => 'idnumber'), array('to' => 'shortname')),
-            'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),
-            'ResumeProduit' => array(array('to' => 'summary'))
-        );
+        $transformdef = [
+            'CodeProduit' => [['to' => 'idnumber'], ['to' => 'shortname']],
+            'IntituleProduit' => [['to' => 'fullname', 'transformcallback' => 'ucwordns']],
+            'ResumeProduit' => [['to' => 'summary']],
+        ];
         $transformer = new standard($transformdef);
 
         $importer = new processor($csvimporter,
@@ -118,9 +118,9 @@ class course_dataimporter_test extends advanced_testcase {
             50
         );
         $importer->import();
-        $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
-        $brachycourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-BRACHY'));
-        $coudecourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-COUDE'));
+        $arthrocourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-ARTHRO']);
+        $brachycourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-BRACHY']);
+        $coudecourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-COUDE']);
         $this->assertNotEmpty($arthrocourse);
         $this->assertNotEmpty($brachycourse);
         $this->assertNotEmpty($coudecourse);
@@ -136,21 +136,21 @@ class course_dataimporter_test extends advanced_testcase {
     public function test_simple_course_with_template_import() {
         global $DB;
         $csvimporter = $this->csvimporter;
-        $transformdef = array(
-            'CodeProduit' => array(array('to' => 'idnumber')),
-            'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),
-            'ResumeProduit' => array(array('to' => 'summary'))
-        );
+        $transformdef = [
+            'CodeProduit' => [['to' => 'idnumber']],
+            'IntituleProduit' => [['to' => 'fullname', 'transformcallback' => 'ucwordns']],
+            'ResumeProduit' => [['to' => 'summary']],
+        ];
         $transformer = new standard($transformdef);
 
         $importer = new processor($csvimporter,
             $transformer,
-            new course_data_importer(array('templatecourseidnumber' => 'templatecourse')));
+            new course_data_importer(['templatecourseidnumber' => 'templatecourse']));
         $importer->import();
         $this->runAdhocTasks(\tool_importer\task\course_restore_task::class); // Make sure the import task has run.
-        $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
-        $brachycourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-BRACHY'));
-        $coudecourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-COUDE'));
+        $arthrocourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-ARTHRO']);
+        $brachycourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-BRACHY']);
+        $coudecourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-COUDE']);
         $this->assertNotEmpty($arthrocourse);
         $this->assertNotEmpty($brachycourse);
         $this->assertNotEmpty($coudecourse);
@@ -169,11 +169,11 @@ class course_dataimporter_test extends advanced_testcase {
     public function test_simple_course_with_customfields() {
         global $DB;
         $csvimporter = $this->csvimporter;
-        $transformdef = array(
-            'CodeProduit' => array(array('to' => 'idnumber'), array('to' => 'cf_f1')),
-            'IntituleProduit' => array(array('to' => 'fullname', 'transformcallback' => 'ucwordns')),
-            'ResumeProduit' => array(array('to' => 'summary')),
-        );
+        $transformdef = [
+            'CodeProduit' => [['to' => 'idnumber'], ['to' => 'cf_f1']],
+            'IntituleProduit' => [['to' => 'fullname', 'transformcallback' => 'ucwordns']],
+            'ResumeProduit' => [['to' => 'summary']],
+        ];
         $transformer = new standard($transformdef);
 
         $importer = new processor($csvimporter,
@@ -181,9 +181,9 @@ class course_dataimporter_test extends advanced_testcase {
             new course_data_importer());
         $importer->import();
 
-        $arthrocourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-ARTHRO'));
-        $brachycourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-BRACHY'));
-        $coudecourse = $DB->get_record('course', array('idnumber' => 'AC-CHIR-COUDE'));
+        $arthrocourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-ARTHRO']);
+        $brachycourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-BRACHY']);
+        $coudecourse = $DB->get_record('course', ['idnumber' => 'AC-CHIR-COUDE']);
         $this->assertNotEmpty($arthrocourse);
         $this->assertNotEmpty($brachycourse);
         $this->assertNotEmpty($coudecourse);

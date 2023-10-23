@@ -46,11 +46,11 @@ class standard_transformer_test extends advanced_testcase {
     /**
      * Test row definition
      */
-    const ROW_DEF = array(
+    const ROW_DEF = [
         'col1' => 'col1value',
         'col2' => 1234,
         'col3' => "AAAAA",
-    );
+    ];
 
     /**
      * Test transform with simple column
@@ -58,19 +58,19 @@ class standard_transformer_test extends advanced_testcase {
      * @covers \tool_importer\local\transformer\standard::transform
      */
     public function test_simple_column_transform() {
-        $transformdef = array(
-            'col1' => array(array('to' => 'newcol1')),
-            'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
-        );
+        $transformdef = [
+            'col1' => [['to' => 'newcol1']],
+            'col2' => [['to' => 'newcol2'], ['to' => 'newcol3']],
+        ];
         $transformer = new standard($transformdef);
 
         $this->assertEquals(
-            array(
+            [
                 'newcol1' => 'col1value',
                 'newcol2' => 1234,
                 'newcol3' => 1234,
                 'col3' => 'AAAAA',
-            ), $transformer->transform(self::ROW_DEF)
+            ], $transformer->transform(self::ROW_DEF)
         );
     }
 
@@ -80,19 +80,19 @@ class standard_transformer_test extends advanced_testcase {
      * @covers \tool_importer\local\transformer\standard::transform
      */
     public function test_simple_column_transform_with_callback() {
-        $transformdef = array(
-            'col1' => array(array('to' => 'newcol1', 'transformcallback' => '\\tool_importer\\test_transform_callback')),
-            'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
-        );
+        $transformdef = [
+            'col1' => [['to' => 'newcol1', 'transformcallback' => '\\tool_importer\\test_transform_callback']],
+            'col2' => [['to' => 'newcol2'], ['to' => 'newcol3']],
+        ];
         $transformer = new standard($transformdef);
 
         $this->assertEquals(
-            array(
+            [
                 'newcol1' => 'col1valueVAL',
                 'newcol2' => 1234,
                 'newcol3' => 1234,
                 'col3' => 'AAAAA',
-            ), $transformer->transform(self::ROW_DEF)
+            ], $transformer->transform(self::ROW_DEF)
         );
     }
 
@@ -102,21 +102,21 @@ class standard_transformer_test extends advanced_testcase {
      * @covers \tool_importer\local\transformer\standard::transform
      */
     public function test_simple_column_transform_with_enhanced_callback() {
-        $transformdef = array(
-            'col1' => array(array('to' => 'summary'),
-                array('to' => 'format', 'transformcallback' => '\\tool_importer\\test_transform_callback_summaryformat')),
-            'col2' => array(array('to' => 'newcol2'), array('to' => 'newcol3'))
-        );
+        $transformdef = [
+            'col1' => [['to' => 'summary'],
+                ['to' => 'format', 'transformcallback' => '\\tool_importer\\test_transform_callback_summaryformat'], ],
+            'col2' => [['to' => 'newcol2'], ['to' => 'newcol3']],
+        ];
         $transformer = new standard($transformdef);
 
         $this->assertEquals(
-            array(
+            [
                 'newcol2' => 1234,
                 'newcol3' => 1234,
                 'col3' => 'AAAAA',
                 'summary' => 'col1value',
-                'format' => '1'
-            ), $transformer->transform(self::ROW_DEF)
+                'format' => '1',
+            ], $transformer->transform(self::ROW_DEF)
         );
     }
 
@@ -126,41 +126,41 @@ class standard_transformer_test extends advanced_testcase {
      * @covers \tool_importer\local\transformer\standard::transform
      */
     public function test_simple_column_concat() {
-        $transformdef = array(
-            'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0])),
-            'col3' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1]))
-        );
+        $transformdef = [
+            'col1' => [['to' => 'newcol1', 'concatenate' => ['order' => 0]]],
+            'col3' => [['to' => 'newcol1', 'concatenate' => ['order' => 1]]],
+        ];
         $transformer = new standard($transformdef);
 
         $this->assertEquals(
-            array(
+            [
                 'newcol1' => "col1value AAAAA",
                 'col2' => 1234,
-            ), $transformer->transform(self::ROW_DEF)
+            ], $transformer->transform(self::ROW_DEF)
         );
-        $transformdef = array(
-            'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0])),
-            'col2' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1]))
-        );
+        $transformdef = [
+            'col1' => [['to' => 'newcol1', 'concatenate' => ['order' => 0]]],
+            'col2' => [['to' => 'newcol1', 'concatenate' => ['order' => 1]]],
+        ];
         $transformer = new standard($transformdef);
 
         $this->assertEquals(
-            array(
+            [
                 'newcol1' => "col1value 1234",
                 'col3' => "AAAAA",
-            ), $transformer->transform(self::ROW_DEF)
+            ], $transformer->transform(self::ROW_DEF)
         );
-        $transformdef = array(
-            'col1' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 1])),
-            'col2' => array(array('to' => 'newcol1', 'concatenate' => ['order' => 0]))
-        );
+        $transformdef = [
+            'col1' => [['to' => 'newcol1', 'concatenate' => ['order' => 1]]],
+            'col2' => [['to' => 'newcol1', 'concatenate' => ['order' => 0]]],
+        ];
         $transformer = new standard($transformdef);
 
         $this->assertEquals(
-            array(
+            [
                 'newcol1' => "1234 col1value",
                 'col3' => "AAAAA",
-            ), $transformer->transform(self::ROW_DEF)
+            ], $transformer->transform(self::ROW_DEF)
         );
     }
 }

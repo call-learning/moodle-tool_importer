@@ -61,7 +61,7 @@ class course_data_importer extends data_importer {
                 'summary' => '',
                 'summaryformat' => FORMAT_HTML,
                 'category' => $defaultcategory,
-                'startdate' => usergetmidnight(time())
+                'startdate' => usergetmidnight(time()),
         ];
         if ($defaultvals) {
             $this->defaultvalues = array_merge($this->defaultvalues, $defaultvals);
@@ -82,48 +82,48 @@ class course_data_importer extends data_importer {
         $transformedfields = [
                 'fullname' => [
                         'type' => field_types::TYPE_TEXT,
-                        'required' => true
+                        'required' => true,
                 ],
                 'shortname' => [
                         'type' => field_types::TYPE_TEXT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'idnumber' => [
                         'type' => field_types::TYPE_TEXT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'format' => [
                         'type' => field_types::TYPE_TEXT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'newsitems' => [
                         'type' => field_types::TYPE_INT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'numsections' => [
                         'type' => field_types::TYPE_INT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'summary' => [
                         'type' => field_types::TYPE_TEXT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'summaryformat' => [
                         'type' => field_types::TYPE_INT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'category' => [
                         'type' => field_types::TYPE_INT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'startdate' => [
                         'type' => field_types::TYPE_INT,
-                        'required' => false
+                        'required' => false,
                 ],
                 'templatecourseidnumber' => [
                         'type' => field_types::TYPE_TEXT,
-                        'required' => false
-                ]
+                        'required' => false,
+                ],
         ];
         $this->validate_from_field_definition($transformedfields, $row, $rowindex);
     }
@@ -140,10 +140,10 @@ class course_data_importer extends data_importer {
     protected function raw_import($row, $rowindex, $options = null) {
         global $DB;
         $existingcourse = !empty($row['idnumber']) && (
-                $DB->record_exists('course', array('idnumber' => $row['idnumber'])));
+                $DB->record_exists('course', ['idnumber' => $row['idnumber']]));
         $course = null;
         if ($existingcourse) {
-            $course = $DB->get_record('course', array('idnumber' => $row['idnumber']));
+            $course = $DB->get_record('course', ['idnumber' => $row['idnumber']]);
             $this->update_course($row, $course);
         } else {
             $course = $this->create_course($row);
@@ -226,14 +226,14 @@ class course_data_importer extends data_importer {
         global $DB, $CFG;
         // Restore the template course if it exists.
         if (!empty($record['templatecourseidnumber'])) {
-            $templatecourse = $DB->get_record('course', array('idnumber' => $record['templatecourseidnumber']));
+            $templatecourse = $DB->get_record('course', ['idnumber' => $record['templatecourseidnumber']]);
             // TODO: use an adhoc task to do that.
             if ($templatecourse) {
                 $courserestoretask = new course_restore_task();
-                $courserestoretask->set_custom_data(array(
+                $courserestoretask->set_custom_data([
                         'templatecourseid' => $templatecourse->id,
-                        'courseid' => $course->id
-                ));
+                        'courseid' => $course->id,
+                ]);
                 $courserestoretask->set_userid(get_admin()->id);
                 manager::queue_adhoc_task($courserestoretask);
             }

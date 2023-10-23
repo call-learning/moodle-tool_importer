@@ -40,7 +40,7 @@ abstract class data_transformer implements data_processor_mgmt_interface {
     /**
      * @var array transformation definition
      */
-    protected $fieldtransformerdef = array();
+    protected $fieldtransformerdef = [];
 
     /**
      * @var string separator for concatenation
@@ -53,7 +53,7 @@ abstract class data_transformer implements data_processor_mgmt_interface {
      * @param array $transformerdef definition
      * @param string $concatseparator separator for concatenation
      */
-    public function __construct($transformerdef = array(), $concatseparator = ' ') {
+    public function __construct($transformerdef = [], $concatseparator = ' ') {
         $this->fieldtransformerdef = $transformerdef;
         $this->concatseparator = $concatseparator;
     }

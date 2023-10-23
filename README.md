@@ -1,7 +1,6 @@
 # Data Importer #
 
-[![Test: Status](https://github.com/call-learning/moodle-tool_importer/actions/workflows/ci.yml/badge.svg)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/ci.yml)
-[![CI Tests (Linting)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/lint.yml/badge.svg)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/lint.yml)
+[![Moodle Plugin CI](https://github.com/call-learning/moodle-tool_importer/actions/workflows/ci.yml/badge.svg)](https://github.com/call-learning/moodle-tool_importer/actions/workflows/ci.yml)
 
 Generic data importer library. It will for example help to import and sync courses data in a more
 configurable way that bulk course import tool.

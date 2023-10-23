@@ -129,7 +129,7 @@ class basic_import_logger implements import_logger {
                         'level' => $level,
                         'origin' => $processor->get_source()->get_source_type() . ':' .
                                 $processor->get_source()->get_source_identifier(),
-                        'importid' => $processor->get_import_id()
+                        'importid' => $processor->get_import_id(),
                 ]);
         $log->create();
     }
